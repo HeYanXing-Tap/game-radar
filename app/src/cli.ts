@@ -7,6 +7,7 @@ import { cluster, computeHeat } from './cluster.ts';
 import { scorePending, board, recordRun } from './pipeline.ts';
 import { prescreenQueue } from './prescreen.ts';
 import { buildDigest } from './digest.ts';
+import { exportStatic, prune } from './export.ts';
 import { serve } from './server.ts';
 import { log, nowIso, q } from './db.ts';
 import { hasLlm } from './config.ts';
@@ -103,6 +104,18 @@ async function main(): Promise<void> {
       return;
     }
 
+    case 'export': {
+      const c = exportStatic();
+      log(`静态数据已导出到 public/data：选题 ${c.topic} 条、作品 ${c.game} 条、热点 ${c.hot} 条、日报 ${c.digests} 份`);
+      return;
+    }
+
+    case 'prune': {
+      const r = prune(Number(flag('days') ?? 45));
+      log(`清理完成：删除 ${r.items} 条过期条目，剩余事件 ${r.events} 个`);
+      return;
+    }
+
     case 'status': {
       const counts = q<{ k: string; n: number }>(
         `SELECT 'items' AS k, COUNT(*) AS n FROM items
@@ -190,6 +203,8 @@ async function main(): Promise<void> {
   node src/cli.ts score [--radar=topic|game] [--limit=60] [--days=3] [--all]
   node src/cli.ts digest [--date=YYYY-MM-DD]
   node src/cli.ts run                抓取→聚簇→预筛→细评→日报 一条龙
+  node src/cli.ts export             导出静态 JSON（给 GitHub Pages / 静态托管用）
+  node src/cli.ts prune --days=45    清理过期条目，控制仓库体积
   node src/cli.ts status             数据概览 + 信源健康度
   node src/cli.ts hot                当前热点
 
@@ -199,7 +214,9 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exitCode = 1;
+  })
+  .finally(() => closeDb());

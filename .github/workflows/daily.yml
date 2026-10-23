@@ -1,0 +1,62 @@
+name: daily-radar
+
+# 每天 08:00（北京时间）跑一次完整流程，结果写回仓库。
+# 仓库里保存 radar.db 作为状态，这样每次只抓增量、日报能连着出。
+on:
+  schedule:
+    # GitHub 的 cron 是 UTC，00:00 UTC = 08:00 北京时间
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-radar
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: 抓取 → 聚簇 → 预筛 → 细评 → 日报
+        working-directory: app
+        env:
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          FETCH_DELAY_MS: '1200'
+        run: node --disable-warning=ExperimentalWarning src/cli.ts run
+
+      - name: 导出静态数据
+        working-directory: app
+        run: node --disable-warning=ExperimentalWarning src/cli.ts export
+
+      - name: 清理过期条目（控制仓库体积）
+        working-directory: app
+        run: node --disable-warning=ExperimentalWarning src/cli.ts prune --days=45
+
+      - name: 同步静态站到 docs/
+        run: |
+          rm -rf docs
+          mkdir -p docs
+          cp -R app/public/. docs/
+
+      - name: 提交回仓库
+        run: |
+          git config user.name  "game-radar-bot"
+          git config user.email "game-radar-bot@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "没有变化，跳过提交"
+            exit 0
+          fi
+          git commit -m "日报 $(date -u '+%Y-%m-%d') UTC"
+          git push

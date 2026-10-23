@@ -1,5 +1,7 @@
-app/data/
-app/.env
+# 数据库：只把主库提交进仓库（给 Actions 续状态用），WAL 和锁文件不要
+app/data/*
+!app/data/radar.db
 node_modules/
 .DS_Store
 *.log
+*.tmp

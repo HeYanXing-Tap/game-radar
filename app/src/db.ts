@@ -205,6 +205,19 @@ export function exec(sql: string, ...params: (string | number | null)[]): void {
   db.prepare(sql).run(...params);
 }
 
+/**
+ * 收尾：把 WAL 合并回主库再关连接。GitHub 上要靠这个保证提交进仓库的
+ * radar.db 是完整的，否则 -wal 里还有没落盘的数据。
+ */
+export function closeDb(): void {
+  try {
+    db.exec('PRAGMA wal_checkpoint(TRUNCATE)');
+    db.close();
+  } catch {
+    // 已经关了就算了
+  }
+}
+
 export function log(msg: string): void {
   const t = new Date().toLocaleTimeString('zh-CN', { hour12: false });
   process.stdout.write(`[${t}] ${msg}\n`);

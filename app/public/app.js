@@ -28,7 +28,7 @@ function relTime(iso) {
   return days < 30 ? `${days} 天前` : d.toLocaleDateString('zh-CN');
 }
 
-const state = { view: 'topic', days: 3, all: false, cache: new Map() };
+const state = { view: 'topic', days: 3, all: false, cache: new Map(), static: false };
 
 async function api(path) {
   const r = await fetch(path);
@@ -36,9 +36,56 @@ async function api(path) {
   return r.json();
 }
 
+/**
+ * 两种运行方式：
+ *  - 本地：有 node 服务，走 /api/*
+ *  - 静态：部署在 GitHub Pages 之类的地方，走预先生成的 /data/*.json
+ * 启动时探一下 /api/stats 就知道自己在哪种模式。
+ */
+async function detectMode() {
+  try {
+    await api('/api/stats');
+    state.static = false;
+  } catch {
+    state.static = true;
+  }
+}
+
+const DATA = (name) => `/data/${name}.json`;
+
+async function getStats() {
+  return state.static ? api(DATA('stats')) : api('/api/stats');
+}
+
+async function getBoard(radar, days, all) {
+  if (state.static) {
+    const d = await api(DATA(`${radar}-${days}`));
+    return all ? d : { ...d, entries: d.entries };
+  }
+  return api(`/api/board?radar=${radar}&days=${days}&limit=40&all=${all ? 1 : 0}`);
+}
+
+async function getHot() {
+  return state.static ? api(DATA('hot')) : api('/api/hot');
+}
+
+async function getDigests() {
+  return state.static ? api(DATA('digests')) : api('/api/digests');
+}
+
+async function getDigest(date) {
+  if (!state.static) return api(`/api/digest?date=${date}`);
+  const history = await api(DATA('digest-history'));
+  return history.find((h) => h.date === date) ?? history[0] ?? { date, markdown: '' };
+}
+
+async function getSources() {
+  return state.static ? api(DATA('sources')) : api('/api/sources');
+}
+
 async function loadStats() {
   try {
-    const s = await api('/api/stats');
+    const s = await getStats();
     $('#statline').textContent = `${s.items} 条内容 · ${s.events} 个事件 · ${s.sources} 个信源`;
   } catch {}
 }
@@ -78,7 +125,7 @@ async function renderBoard(radar) {
   const key = `${radar}-${state.days}-${state.all}`;
   let data = state.cache.get(key);
   if (!data) {
-    data = await api(`/api/board?radar=${radar}&days=${state.days}&limit=40&all=${state.all ? 1 : 0}`);
+    data = await getBoard(radar, state.days, state.all);
     state.cache.set(key, data);
   }
   if (!data.entries.length) {
@@ -99,7 +146,7 @@ async function renderBoard(radar) {
 async function renderHot() {
   const el = $('#view-hot');
   el.innerHTML = '<div class="empty">载入中…</div>';
-  const rows = await api('/api/hot');
+  const rows = await getHot();
   if (!rows.length) {
     el.innerHTML = '<div class="empty">还没有事件。跑 <code>npm run collect && npm run score</code></div>';
     return;
@@ -161,12 +208,12 @@ async function renderDigest() {
   const el = $('#view-digest');
   el.innerHTML = '<div class="empty">载入中…</div>';
   try {
-    const list = await api('/api/digests');
+    const list = await getDigests();
     if (!list.length) {
       el.innerHTML = '<div class="empty">还没有日报。跑 <code>npm run digest</code> 生成今天的。</div>';
       return;
     }
-    const d = await api(`/api/digest?date=${list[0].date}`);
+    const d = await getDigest(list[0].date);
     el.innerHTML = `<div class="md">${md(d.markdown || '')}</div>`;
   } catch (e) {
     el.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
@@ -176,7 +223,7 @@ async function renderDigest() {
 async function renderSources() {
   const el = $('#view-sources');
   el.innerHTML = '<div class="empty">载入中…</div>';
-  const rows = await api('/api/sources');
+  const rows = await getSources();
   el.innerHTML = `
     <table>
       <thead><tr><th>信源</th><th>角色</th><th>分级</th><th>产出</th><th>最近成功</th><th>状态</th></tr></thead>
@@ -250,5 +297,7 @@ document.addEventListener('click', async (e) => {
   } catch {}
 });
 
-loadStats();
-switchView(location.hash.slice(1) || 'topic');
+detectMode().then(() => {
+  loadStats();
+  switchView(location.hash.slice(1) || 'topic');
+});
