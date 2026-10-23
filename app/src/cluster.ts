@@ -1,5 +1,6 @@
 import { exec, log, nowIso, one, q, similarity, titleKey } from './db.ts';
 import { chatJson } from './llm.ts';
+import { cfg } from './config.ts';
 import { hasLlm } from './config.ts';
 
 interface ItemRow {
@@ -53,7 +54,7 @@ export async function cluster(onProgress?: (msg: string) => void): Promise<{ mer
       judged++;
       const verdict = await chatJson<{ same: boolean; relation?: string }>(
         `判断两条游戏资讯是否在讲同一件事。\n\nA（已有事件）：${best.ev.title}\nB（新条目）：${it.title}\n${it.summary ? `B 摘要：${it.summary.slice(0, 300)}` : ''}\n\n只输出 JSON：{"same": true/false, "relation": "same|followup|different"}`,
-        { system: '你是新闻编辑，擅长判断两条资讯是否报道同一件事。只输出 JSON。', temperature: 0 }
+        { system: '你是新闻编辑，擅长判断两条资讯是否报道同一件事。只输出 JSON。', temperature: 0, model: cfg.reviewModel || undefined }
       );
       if (verdict?.same) targetId = best.ev.id;
     }
