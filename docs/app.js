@@ -90,7 +90,7 @@ async function loadStats() {
     const when = s.generated_at
       ? new Date(s.generated_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
       : '';
-    $('#statline').textContent = `${s.items} 条内容 · ${s.events} 个事件 · ${s.sources} 个信源${when ? ` · 更新于 ${when}` : ''}`;
+    $('#statline').textContent = `${s.items} 条 · ${s.events} 事件 · ${s.sources} 源${when ? ` · 更新 ${when}` : ''}`;
   } catch {}
 }
 
