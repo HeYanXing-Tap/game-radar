@@ -45,7 +45,8 @@ jobs:
 
       - name: 同步静态站到 docs/
         run: |
-          rm -rf docs
+          # docs/ 里还放着截图，所以只替换站点自身的文件
+          rm -rf docs/data
           mkdir -p docs
           cp -R app/public/. docs/
 

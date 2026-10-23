@@ -9,7 +9,7 @@ import { prescreenQueue } from './prescreen.ts';
 import { buildDigest } from './digest.ts';
 import { exportStatic, prune } from './export.ts';
 import { serve } from './server.ts';
-import { log, nowIso, q } from './db.ts';
+import { closeDb, log, nowIso, q } from './db.ts';
 import { hasLlm } from './config.ts';
 import { stats } from './llm.ts';
 import type { Radar } from './types.ts';
