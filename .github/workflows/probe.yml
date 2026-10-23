@@ -1,0 +1,44 @@
+name: probe-sources
+
+# 只用来验证一件事：GitHub 的境外出口 IP 能不能抓到这些中文信源。
+# 手动触发，不跑定时，不改动任何数据。
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: 环境信息
+        run: |
+          echo "node: $(node -v)"
+          echo "runner IP: $(curl -s https://api.ipify.org || echo unknown)"
+          echo "出口地区: $(curl -s https://ipinfo.io/country || echo unknown)"
+
+      - name: 逐个探测信源
+        working-directory: app
+        env:
+          FETCH_DELAY_MS: '1200'
+        run: |
+          set -o pipefail
+          node --disable-warning=ExperimentalWarning src/cli.ts probe --file=sources.json | tee /tmp/probe.txt
+          echo "## 探测结果" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep -E '^(✓|✗)' /tmp/probe.txt >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: 汇总
+        working-directory: app
+        env:
+          FETCH_DELAY_MS: '1200'
+        run: |
+          ok=$(grep -c '^✓' /tmp/probe.txt || true)
+          bad=$(grep -c '^✗' /tmp/probe.txt || true)
+          echo "通过 $ok 个，失败 $bad 个"

@@ -1,0 +1,525 @@
+{
+  "domain": "cn-media",
+  "probedAt": "2026-10-23T11:47:53+08:00",
+  "sources": [
+    {
+      "id": "gcores",
+      "name": "机核",
+      "role": "media",
+      "region": "cn",
+      "type": "rss",
+      "url": "https://www.gcores.com/rss",
+      "httpStatus": 200,
+      "latencyMs": 218,
+      "verified": true,
+      "itemCount": 20,
+      "latestAt": "2026-10-23T11:00:00+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "notes": "标准 RSS 2.0，一次 20 条，无分页参数。pubDate 带 +0800，是真实发布时间。带 <thumb>（封面图 URL）和 <author>（可能是多作者逗号分隔），description 为整段 HTML 需去标签。1 次请求即拿到 20 条，适合做 15 分钟级轮询。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "一路向西丨核聚变2026北京站入场指南",
+          "url": "https://www.gcores.com/articles/221373",
+          "publishedAt": "2026-10-23T11:00:00+08:00"
+        },
+        {
+          "title": "AI 角色互动社交网络模拟器《ailiaili 爱哩爱哩》概念预告公开 将亮相北京核聚变",
+          "url": "https://www.gcores.com/articles/221377",
+          "publishedAt": "2026-10-23T10:47:53+08:00"
+        },
+        {
+          "title": "用动作肉鸽，写一卷上古时代的洪荒史诗｜《定海》试玩体验",
+          "url": "https://www.gcores.com/articles/221358",
+          "publishedAt": "2026-10-23T10:00:00+08:00"
+        },
+        {
+          "title": "亚马逊《质量效应》真人剧集仍将继续推进",
+          "url": "https://www.gcores.com/articles/221366",
+          "publishedAt": "2026-10-23T09:20:00+08:00"
+        },
+        {
+          "title": "《破壳行动》10月27日正式发售,12万玩家已加入愿望单",
+          "url": "https://www.gcores.com/articles/221365",
+          "publishedAt": "2026-10-23T09:10:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "gcores-api",
+      "name": "机核（JSON:API 列表）",
+      "role": "media",
+      "region": "cn",
+      "type": "json",
+      "url": "https://www.gcores.com/gapi/v1/articles?page[limit]=20&sort=-published_at",
+      "httpStatus": 200,
+      "latencyMs": 228,
+      "verified": true,
+      "itemCount": 20,
+      "latestAt": "2026-10-23T11:19:52+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": true,
+        "author": true
+      },
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "application/vnd.api+json"
+      },
+      "notes": "JSON:API。必须带 Accept: application/vnd.api+json（否则 406），必须用 page[limit]/page[offset] 分页（用 limit/page 会 400 Invalid Page Object）。URL 里的 [] 用 fetch 会编码成 %5B，服务端仍能解析。sort=-published_at 才是时间倒序，不带参数返回的是 2013 年的老文章。attributes 里带热度：likes-count / comments-count / bookmarks-count / plays，另有 tag-data、owner-type、vol，适合做「热榜」第二路；meta.record-count 显示全站约 30000 篇，可按 page[offset] 深度翻页。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "一刀一枪闯欧洲——《不朽遗志》",
+          "url": "https://www.gcores.com/articles/221372",
+          "publishedAt": "2026-10-23T11:19:52+08:00"
+        },
+        {
+          "title": "把准时下班做成潜行小游戏：我们做了三个浏览器里的日常挑战",
+          "url": "https://www.gcores.com/articles/221371",
+          "publishedAt": "2026-10-23T11:19:52+08:00"
+        },
+        {
+          "title": "一路向西丨核聚变2026北京站入场指南",
+          "url": "https://www.gcores.com/articles/221373",
+          "publishedAt": "2026-10-23T11:00:00+08:00"
+        },
+        {
+          "title": "AI 角色互动社交网络模拟器《ailiaili 爱哩爱哩》概念预告公开 将亮相北京核聚变",
+          "url": "https://www.gcores.com/articles/221377",
+          "publishedAt": "2026-10-23T10:47:53+08:00"
+        },
+        {
+          "title": "同袍集结，全服撒金！《长安幻想》全新“同袍节”版本今日开启！",
+          "url": "https://www.gcores.com/articles/221363",
+          "publishedAt": "2026-10-23T10:00:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "yystv",
+      "name": "游研社",
+      "role": "media",
+      "region": "cn",
+      "type": "rss",
+      "url": "https://www.yystv.cn/rss/feed",
+      "httpStatus": 200,
+      "latencyMs": 166,
+      "verified": true,
+      "itemCount": 12,
+      "latestAt": "2026-10-22T18:00:00+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": false
+      },
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "notes": "标准 RSS 2.0，一次 12 条（不是 20），无分页参数。pubDate 带 +0800 真实时间。没有 author / dc:creator，也没有任何热度字段。description 是 HTML 全段，首图要自己取 <img>。12 条/次意味着高频轮询才能不漏稿，建议 15 分钟一次。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "来看看《赛博朋克 2077》｜“边缘行者 2” 版本更新 2.5 为夜之城带来了哪些内容！",
+          "url": "https://www.yystv.cn/p/14536",
+          "publishedAt": "2026-10-22T18:00:00+08:00"
+        },
+        {
+          "title": "突发：老牌RPG工作室BioWare宣布关闭，成立逾30年",
+          "url": "https://www.yystv.cn/p/14535",
+          "publishedAt": "2026-10-22T02:10:00+08:00"
+        },
+        {
+          "title": "“犯罪分子听说他们是做GTA6的，就把自己违法犯罪的事全抖搂出来了”",
+          "url": "https://www.yystv.cn/p/14534",
+          "publishedAt": "2026-10-22T00:00:00+08:00"
+        },
+        {
+          "title": "没等同行做出“平替”，这款革命性的鼠标先出了加强版",
+          "url": "https://www.yystv.cn/p/14532",
+          "publishedAt": "2026-10-22T00:00:00+08:00"
+        },
+        {
+          "title": "明明是讲朝韩战争的COD23，怎么就写成母鸡卡了？",
+          "url": "https://www.yystv.cn/p/14533",
+          "publishedAt": "2026-10-22T00:00:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "gamersky",
+      "name": "游民星空",
+      "role": "media",
+      "region": "cn",
+      "type": "html",
+      "url": "https://www.gamersky.com/news/",
+      "httpStatus": 200,
+      "latencyMs": 23,
+      "verified": true,
+      "itemCount": 176,
+      "latestAt": "2026-10-23T11:29:00+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": false
+      },
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "notes": "服务端渲染 HTML。站内 RSS 已废弃：/rss/ 403、/rss.xml 与 /rss.aspx 404，所以只能扒页面。单页 <li><div class=\"tit\">..</div>..</li> 结构里能同时拿到 title / href / 摘要 / 首图 / 真实时间，时间格式 \"YYYY-MM-DD HH:mm\"（CST）。一页能解析出 ~177 条去重后的资讯（页面按「今日推荐/单机电玩/NS/手游/网游/业界/硬件/科技」多个 tab 预渲染，223 个 tit 元素），单次抓取量是全组最大的。注意：tab 混排导致结果【不是】严格时间倒序，必须客户端按 publishedAt 重排。评论数是畅言（cy_comment + data-sid）JS 异步注入，HTML 里是空 div，抓不到，故 heat=false。分页由 contentpaging 的 PageList() JS 驱动，没有干净的 ?page= 入口，靠单页 177 条已够用。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "《地铁 归来》次世代更新官宣上线！DLSS FSR都来了",
+          "url": "https://www.gamersky.com/news/202610/2233625.shtml",
+          "publishedAt": "2026-10-23T10:28:00+08:00"
+        },
+        {
+          "title": "PS6最新爆料汇总：6600元+ 纯数字无光驱 4K120帧",
+          "url": "https://www.gamersky.com/news/202610/2233632.shtml",
+          "publishedAt": "2026-10-23T10:38:00+08:00"
+        },
+        {
+          "title": "B站UP主：《影之刃零》无主播抢先玩环节 前车之鉴太多",
+          "url": "https://www.gamersky.com/news/202610/2233612.shtml",
+          "publishedAt": "2026-10-23T10:17:00+08:00"
+        },
+        {
+          "title": "《蓝色星原：旅谣》官宣定档 11月26日正式开启公测",
+          "url": "https://www.gamersky.com/news/202610/2233664.shtml",
+          "publishedAt": "2026-10-23T11:19:00+08:00"
+        },
+        {
+          "title": "跨性别网红爱里科普：术后无生理期 但需终身养护",
+          "url": "https://www.gamersky.com/news/202610/2233614.shtml",
+          "publishedAt": "2026-10-23T10:17:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "3dmgame",
+      "name": "3DM 游戏网",
+      "role": "media",
+      "region": "cn",
+      "type": "html",
+      "url": "https://www.3dmgame.com/news/",
+      "httpStatus": 200,
+      "latencyMs": 147,
+      "verified": true,
+      "itemCount": 20,
+      "latestAt": "2026-10-23T11:43:00+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": false,
+        "image": true,
+        "heat": false,
+        "author": false
+      },
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "notes": "服务端渲染 HTML，无 RSS。/news/ 主列表是 <li class=\"selectpost\"> 序列，标题在 <a class=\"bt\">，链接是干净的 /news/YYYYMM/ID.html，发布时间在 <span class=\"time\">，格式 \"YYYY-MM-DD HH:mm:ss\"（CST，精确到秒）——本组时间精度最高的源。一页约 24 条；分页是纯 URL（/news_all_2/、/news_all_3/ …），可以稳定深翻。没有摘要正文（列表只有标题+缩略图），也没有评论/点击数字。详情页里其实有服务端渲染的评论数 <span id=\"Ct_total\">（N人参与，M条评论），但列表页拿不到，要 N+1 才补得出来，所以本条 heat=false。div.bq 里的 <a> 是「所属游戏/栏目」标签，别当 author 用。同页 sidebar 有个「近期热门」模块（div.QZ_title + div.net a），是人工排序无数字，可当第二路信号，但拿不到量级，故未标 heat。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "《足球经理27》首发体验版限时免费游玩活动将于10月30日开启",
+          "url": "https://www.3dmgame.com/news/202610/3957562.html",
+          "publishedAt": "2026-10-23T11:43:00+08:00"
+        },
+        {
+          "title": "以动漫为灵感的合作冒险游戏《轨道双子星》限时折扣开启",
+          "url": "https://www.3dmgame.com/news/202610/3957561.html",
+          "publishedAt": "2026-10-23T11:41:32+08:00"
+        },
+        {
+          "title": "《超英派遣中心》发售一周年庆典开启 豪华版DLC免费更新，史低8折狂欢进行中",
+          "url": "https://www.3dmgame.com/news/202610/3957560.html",
+          "publishedAt": "2026-10-23T11:40:41+08:00"
+        },
+        {
+          "title": "《机动战士高达SEED FREEDOM MSV》启动连载并公开两款CDE规格机",
+          "url": "https://www.3dmgame.com/news/202610/3957559.html",
+          "publishedAt": "2026-10-23T11:39:46+08:00"
+        },
+        {
+          "title": "《宝可梦悠闲乐园》万圣节活动现已开放并推出纪念壁纸！",
+          "url": "https://www.3dmgame.com/news/202610/3957558.html",
+          "publishedAt": "2026-10-23T11:38:52+08:00"
+        }
+      ]
+    },
+    {
+      "id": "gamelook",
+      "name": "GameLook / 游戏大观",
+      "role": "media",
+      "region": "cn",
+      "type": "rss",
+      "url": "http://www.gamelook.com.cn/feed/",
+      "httpStatus": 200,
+      "latencyMs": 1036,
+      "verified": true,
+      "itemCount": 31,
+      "latestAt": "2026-10-23T10:46:52+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "notes": "WordPress 站，/feed/ 是标准 RSS 2.0，一次 31 条，无分页。pubDate 是 GMT（+0000），必须换算成 +08:00，否则会整体早 8 小时。带 dc:creator 作者、category 栏目；正文图片在 <content:encoded> 里（description 只有纯文本摘要）。两个坑：① 只支持 http，https 的 443 直接 connection refused；② /feed/ 偶发 502（nginx 回源失败），本次探测第一次 502、第三次才 200，所以脚本里必须「/feed/ 失败就退到 ?feed=rss2（301 回 /feed/）」并允许重试。另：游戏葡萄（youxiputao.com）未启用，GameLook 已满足「二选一」。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "“没故事可讲”的游戏股，跌了一整年！",
+          "url": "http://www.gamelook.com.cn/2026/10/604599/",
+          "publishedAt": "2026-10-23T10:46:52+08:00"
+        },
+        {
+          "title": "1人4小时开发，“AI投胎人生模拟游戏”火了！",
+          "url": "http://www.gamelook.com.cn/2026/10/604620/",
+          "publishedAt": "2026-10-23T10:46:35+08:00"
+        },
+        {
+          "title": "叠纸不画饼：姚润昊机器人公司来了，纸片人老公真要“走出屏幕”？",
+          "url": "http://www.gamelook.com.cn/2026/10/604651/",
+          "publishedAt": "2026-10-23T10:40:30+08:00"
+        },
+        {
+          "title": "《地铁跑酷》老板分享：15年，零买量，为何还能有1.5亿MAU？",
+          "url": "http://www.gamelook.com.cn/2026/10/604597/",
+          "publishedAt": "2026-10-23T09:27:57+08:00"
+        },
+        {
+          "title": "情怀投资到期，米哈游不做脑机接口了？退出上海零唯一思",
+          "url": "http://www.gamelook.com.cn/2026/10/604656/",
+          "publishedAt": "2026-10-23T08:44:27+08:00"
+        }
+      ]
+    },
+    {
+      "id": "indienova",
+      "name": "indienova 独立游戏",
+      "role": "media",
+      "region": "cn",
+      "type": "rss",
+      "url": "https://indienova.com/feed/",
+      "httpStatus": 200,
+      "latencyMs": 830,
+      "verified": true,
+      "itemCount": 10,
+      "latestAt": "2026-10-23T08:00:00+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "notes": "【最重要的坑：尾斜杠】https://indienova.com/feed （无斜杠）稳定 404，https://indienova.com/feed/ （带斜杠）才是 200 的 RSS 2.0。我一开始就是因为漏了这个斜杠，差点误判「indienova 没有 RSS 只能扒 HTML」，翻回来救了一整条链路。标准 RSS 2.0，一次 10 条，无分页。pubDate 带 +0800 真实发布时间，而且是整点发布（08:00 / 14:00）。带 dc:creator 作者、category 栏目；description 是纯文本短摘要，正文 HTML 在 <content:encoded>，首图要从那里取。有 <slash:comments> 评论数但 10 条全是 0，没有点赞数，所以 heat=false；要热度得走 HTML 列表（见 indienova-list）。10 条/次偏少，若要抓全需要配合 HTML 列表分页补量。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "itch 一周游戏汇：10月12日-10月18日（上）",
+          "url": "https://indienova.com/indie-game-news/itch-new-games-summary-of-last-week-2026-1012-1018-part1/",
+          "publishedAt": "2026-10-23T08:00:00+08:00"
+        },
+        {
+          "title": "Nicky Case：如果游戏和游戏叙事一样...",
+          "url": "https://indienova.com/indie-game-news/sunset-sway-nicky-case-if-games-were-like-game-stories/",
+          "publishedAt": "2026-10-22T14:00:00+08:00"
+        },
+        {
+          "title": "本周 Steam 值得关注的游戏 10.19 - 10.25（下）",
+          "url": "https://indienova.com/indie-game-news/guide-2026-1019-1025-part-3/",
+          "publishedAt": "2026-10-22T08:00:00+08:00"
+        },
+        {
+          "title": "NOVA海外独立游戏见闻 Vol.157",
+          "url": "https://indienova.com/indie-game-news/news-of-overseas-indie-games-and-industry-vol-157/",
+          "publishedAt": "2026-10-21T14:00:00+08:00"
+        },
+        {
+          "title": "诺娃独立游戏通讯 2026-#42",
+          "url": "https://indienova.com/indie-game-news/nova-post-2026-42/",
+          "publishedAt": "2026-10-21T08:00:00+08:00"
+        }
+      ]
+    },
+    {
+      "id": "indienova-list",
+      "name": "indienova 独立游戏（HTML 列表 / 带互动数）",
+      "role": "media",
+      "region": "cn",
+      "type": "html",
+      "url": "https://indienova.com/indie-game-news/",
+      "httpStatus": 200,
+      "latencyMs": 83,
+      "verified": true,
+      "itemCount": 12,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": true,
+        "image": true,
+        "heat": true,
+        "author": false
+      },
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "notes": "这是 indienova 的「有热度、没时间」变体，和上一条 indienova(RSS) 是同一家站的两个入口：RSS 有时间没热度，HTML 列表有热度没时间，二选一得看雷达要哪一头。列表页 .article-panel 里只有 标题(h4>a) / 摘要(p) / 封面图 / 互动数(.views-badge: number-first=点赞, number-last=评论)，12 条/页，分页干净（/indie-game-news/page/2/ … 共 530 页，可深翻）。【拿不到发布时间的典型】整页没有任何发布时间字段。我进文章详情页复核过：可见的时间只有一个藏在 HTML 注释里的「<!-- <div class=\"hidden\"> 2026-10-23 11:42:33 -->」，那是服务端渲染时间戳，不是发布时间；真正的发文信息在 <span class=\"header-info\">作者：…<br />前天 10-21 08:00</span>，是「相对日期 + MM-DD」、无年份，而且只在详情页 —— 列表页拿不到，要 N+1 次请求才能补。所以要时间就走 RSS，别扒这个列表。heat=true 但量级极小：点赞 0–5、评论 12 条全是 0，只能当弱信号。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "itch 一周游戏汇：10月12日-10月18日（上）",
+          "url": "https://indienova.com/indie-game-news/itch-new-games-summary-of-last-week-2026-1012-1018-part1/",
+          "publishedAt": null
+        },
+        {
+          "title": "Nicky Case：如果游戏和游戏叙事一样...",
+          "url": "https://indienova.com/indie-game-news/sunset-sway-nicky-case-if-games-were-like-game-stories/",
+          "publishedAt": null
+        },
+        {
+          "title": "本周 Steam 值得关注的游戏 10.19 - 10.25（下）",
+          "url": "https://indienova.com/indie-game-news/guide-2026-1019-1025-part-3/",
+          "publishedAt": null
+        },
+        {
+          "title": "NOVA海外独立游戏见闻 Vol.157",
+          "url": "https://indienova.com/indie-game-news/news-of-overseas-indie-games-and-industry-vol-157/",
+          "publishedAt": null
+        },
+        {
+          "title": "诺娃独立游戏通讯 2026-#42",
+          "url": "https://indienova.com/indie-game-news/nova-post-2026-42/",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "chuapp",
+      "name": "触乐",
+      "role": "media",
+      "region": "cn",
+      "type": "html",
+      "url": "https://www.chuapp.com/",
+      "httpStatus": 200,
+      "latencyMs": 222,
+      "verified": true,
+      "itemCount": 25,
+      "latestAt": "2026-10-22T00:00:00+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "notes": "服务端渲染 HTML，无 RSS，无 JSON 接口（首页里没有任何 /api/ 或 ajax 路径）。首页能抓到 25 条 /article/<id>.html，标题在 h2（有作者卡的条目）或 h3（无作者卡的条目），别只取 h2 —— 那样会漏掉 10 条。【时间：列表只到「天」，详情页才到「分」，且要 N+1】列表页印的是 <span>10.22</span>，只有月.日，无年份无时分；但每条封面的图片路径 img.chuapp.com/wp-content/Picture/YYYY-MM-DD/ 里带完整年月日，本脚本优先用它补年份，取不到才退回 MM.DD 按当年推断。详情页复核（实测 https://www.chuapp.com/article/291706.html）：有 <div class=\"author-time\"><span class=\"friendly_time\" data-time=\"1792666380\">2026年10月22日 18时53分</span>，data-time 是 unix 秒，换算后精确到分，同块还有 <em>编辑</em> 作者名；但没有 meta[property=article:published_time]、也没有 ld+json 里的 datePublished。所以：想拿「分」级时间必须逐条进详情页（25 条 = 25 次请求，不划算），列表页只能给到「天」级 —— 排重够用，做秒级时效排序不够。首页另有一个「热门文章」模块（div.news > div.line 拼出「热门文章」四个 span，其后 ul li 是人工热榜），但只有排序、没有阅读数/评论数，故 heat 仍标 false。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "Eternal Summer访谈：《极乐迪斯科》精神最激进的继承者是怎么想的？",
+          "url": "https://www.chuapp.com/article/291706.html",
+          "publishedAt": "2026-10-22T00:00:00+08:00"
+        },
+        {
+          "title": "裁员潮席卷游戏行业，独立作曲家怎样渡过难关？",
+          "url": "https://www.chuapp.com/article/291705.html",
+          "publishedAt": "2026-10-21T00:00:00+08:00"
+        },
+        {
+          "title": "《THE FINALS》国服《终极角逐》正式定档11月18日",
+          "url": "https://www.chuapp.com/article/290968.html",
+          "publishedAt": "2025-11-10T00:00:00+08:00"
+        },
+        {
+          "title": "没有中国大厂的TGS",
+          "url": "https://www.chuapp.com/article/291668.html",
+          "publishedAt": "2026-09-29T00:00:00+08:00"
+        },
+        {
+          "title": "《狂热运输3》开发者专访：当运输游戏做到第13年",
+          "url": "https://www.chuapp.com/article/291660.html",
+          "publishedAt": "2026-09-25T00:00:00+08:00"
+        }
+      ]
+    }
+  ],
+  "rejected": [
+    {
+      "name": "VGtime 游戏时光",
+      "reason": "域名已不再服务原站：首页只返回 19156 字节的 SEO 镜像壳，HTML 开头留着 \"saved from url=(0021)https://www.u78g.com/\" 注释，CSS 指向 youjiu.173183.com，正文全是「某游戏上线/某活动开启」的软文标题，没有任何 vgtime 自有栏目或文章链接；/news/ 返回 500，/rss 返回 404。HEAD 请求还带着空文件的 etag（da39a3ee5e6b4b0d3255bfef95601890afd80709）和 Content-Length: 0 —— 典型的域名过期后被停放/SEO 农场接管，不是反爬。",
+      "tried": [
+        "https://www.vgtime.com/",
+        "https://www.vgtime.com/news/",
+        "https://www.vgtime.com/rss"
+      ]
+    },
+    {
+      "name": "游民星空站内 RSS",
+      "reason": "官方 RSS 入口已废弃：/rss/ 返回 403，/rss.xml 与 /rss.aspx 返回 404。该站只能走 HTML 列表（见 gamersky 条目，实测可用且带真实时间）",
+      "tried": [
+        "https://www.gamersky.com/rss/",
+        "https://www.gamersky.com/rss.xml",
+        "https://www.gamersky.com/rss.aspx"
+      ]
+    },
+    {
+      "name": "indienova /feed（无尾斜杠）",
+      "reason": "https://indienova.com/feed 返回 404，但 https://indienova.com/feed/（带尾斜杠）返回 200 —— 这个斜杠差点让我误判该站没有 RSS，记录在此当反例",
+      "tried": [
+        "https://indienova.com/feed"
+      ]
+    },
+    {
+      "name": "游戏葡萄 youxiputao.com",
+      "reason": "未探测：GameLook 的 /feed/ 已实测可用，按需求「二选一」只保留一个，葡萄留待后续",
+      "tried": []
+    }
+  ]
+}

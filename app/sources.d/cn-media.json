@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-23T12:05:00+08:00",
+  "domain": "cn-media",
+  "note": "国内游戏垂媒。由 research/probes/cn-media.mjs 实测后转写，探测报告见 research/sources/cn-media.md。tier 3=一手官方，2=准一手，1=二手聚合。",
+  "sources": [
+    {
+      "id": "gcores",
+      "name": "机核",
+      "role": "media",
+      "region": "cn",
+      "type": "json",
+      "url": "https://www.gcores.com/gapi/v1/articles?page[limit]=20&sort=-published_at",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 60,
+      "headers": {
+        "Accept": "application/vnd.api+json"
+      },
+      "adapter": {
+        "path": "data",
+        "urlTemplate": "https://www.gcores.com/articles/{id}",
+        "map": {
+          "title": ["attributes.title"],
+          "url": [],
+          "summary": ["attributes.summary", "attributes.desc"],
+          "publishedAt": ["attributes.published-at"]
+        },
+        "heat": {
+          "likes": "attributes.likes-count",
+          "comments": "attributes.comments-count",
+          "bookmarks": "attributes.bookmarks-count",
+          "plays": "attributes.plays"
+        }
+      },
+      "note": "JSON:API，20 条/次。三连坑：Accept 必须 application/vnd.api+json（写 application/json 直接 406）；分页必须 page[limit]/page[offset]（写 limit/page 会 400 Invalid Page Object）；必须显式 sort=-published_at，不带会返回 2013 年的老文章。热度齐全（likes/comments/bookmarks/plays）。两处拿不到：① author 在 relationships.user，需要 include=user 再从 included 里 join，当前 adapter 不支持逐行 join；② cover/thumb 只是裸文件名（如 xxx-1920-1080.jpg），要 https://image.gcores.com/ 前缀才能成 URL，adapter 不能拼前缀，所以不映射 image，避免存半个链接。本条目替换 sources.json 里原来的机核 RSS（同一来源不重复抓）。"
+    },
+    {
+      "id": "gamersky",
+      "name": "游民星空",
+      "role": "media",
+      "region": "cn",
+      "type": "html",
+      "url": "https://www.gamersky.com/news/",
+      "tier": 1,
+      "enabled": true,
+      "intervalMin": 45,
+      "headers": {},
+      "adapter": {
+        "rowPattern": "<li[^>]*>\\s*<div class=\"tit\">[\\s\\S]*?</li>",
+        "title": "<a[^>]*class=\"tt\"[^>]*>([\\s\\S]*?)</a>",
+        "link": "href=\"([^\"]+)\"",
+        "time": "<div class=\"time\">([^<]*)</div>",
+        "summary": "<div class=\"txt\">([\\s\\S]*?)</div>",
+        "image": "<img[^>]*src=\"([^\"]+)\""
+      },
+      "note": "站内 RSS 已废（/rss/ 403、/rss.xml 404、/rss.aspx 404），只能扒 /news/。单页能出 176~178 条（页面把「今日推荐/单机电玩/NS/手游/网游/业界/硬件/科技」多个 tab 全部预渲染，li 结构一致），时间到分，是本组单次产出最大的源。⚠ 因为 tab 混排，结果【不是】时间倒序，入库/展示前必须按 publishedAt 重排。评论区是畅言（cy_comment + data-sid）JS 异步注入，HTML 里只有空 div，抓不到热度。分页走 contentpaging 的 PageList() JS，没有干净的 ?page= 入口，靠单页量即可。"
+    },
+    {
+      "id": "3dmgame",
+      "name": "3DM 游戏网",
+      "role": "media",
+      "region": "cn",
+      "type": "html",
+      "url": "https://www.3dmgame.com/news/",
+      "tier": 1,
+      "enabled": true,
+      "intervalMin": 45,
+      "headers": {},
+      "adapter": {
+        "rowPattern": "<li[^>]*class=\"selectpost\"[^>]*>[\\s\\S]*?</li>",
+        "title": "<a[^>]*class=\"bt\"[^>]*>([\\s\\S]*?)</a>",
+        "link": "href=\"([^\"]+)\"",
+        "time": "<span class=\"time\">([\\s\\S]*?)</span>",
+        "image": "<img[^>]*(?:data-original|src)=\"([^\"]+)\""
+      },
+      "note": "时间精确到秒（YYYY-MM-DD HH:mm:ss），全组时效最准的源。一页约 20 条，分页是纯 URL：/news_all_2/、/news_all_3/ …，需要追量时可直接改 url 深翻。两个正则坑：① <a> 的属性顺序是 href 在前、class=\"bt\" 在后，正则写成 class 在前会抓到 0 条；② 缩略图用的是 data-original 懒加载属性而不是 src，只匹配 src 会全空。列表没有摘要；div.bq 里那个 <a> 是「所属游戏/栏目」标签不是作者。详情页 #Ct_total 有评论数但要 N+1，未纳入。"
+    },
+    {
+      "id": "gamelook",
+      "name": "GameLook 游戏大观",
+      "role": "media",
+      "region": "cn",
+      "type": "rss",
+      "url": "http://www.gamelook.com.cn/feed/",
+      "tier": 1,
+      "enabled": true,
+      "intervalMin": 60,
+      "headers": {},
+      "adapter": {},
+      "note": "WordPress 标准 RSS 2.0，31 条/次，带 dc:creator 作者和 category 栏目，产业/商业视角的唯一来源。两个坑：① 只支持 http —— https 的 443 直接 connection refused，别改成 https；② /feed/ 偶发 502（nginx 回源失败，实测第一次 502、第三次才 200），靠 politeFetch 的 5xx 重试兜底，若持续失败可退到 http://www.gamelook.com.cn/?feed=rss2（它会 301 回 /feed/）。pubDate 是 GMT（+0000），parseDate 已按 +0000 正确换算成 +08:00，不要手工再减 8 小时。"
+    },
+    {
+      "id": "indienova",
+      "name": "indienova 独立游戏",
+      "role": "media",
+      "region": "cn",
+      "type": "rss",
+      "url": "https://indienova.com/feed/",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 120,
+      "headers": {},
+      "adapter": {},
+      "note": "⚠ RSS 必须带尾斜杠 /feed/ —— /feed（无斜杠）稳定 404，少了这个斜杠会误判成「该站没有 RSS」。10 条/次，量小，所以间隔给到 120 分钟。pubDate 带 +0800 是真实发布时间，整点发布（08:00/14:00）。有 dc:creator 作者。热度拿不到：slash:comments 10 条全是 0。它的 HTML 列表页（/indie-game-news/）有点赞/评论数，但整页没有发布时间（页面上那个 2026-10-23 11:42:33 藏在 HTML 注释里，是服务端渲染时刻，不是发布时间），已放弃不用。"
+    },
+    {
+      "id": "chuapp",
+      "name": "触乐",
+      "role": "media",
+      "region": "cn",
+      "type": "html",
+      "url": "https://www.chuapp.com/",
+      "tier": 1,
+      "enabled": true,
+      "intervalMin": 60,
+      "headers": {},
+      "adapter": {
+        "rowPattern": "<a[^>]*href=\"/article/\\d+\\.html\"[\\s\\S]*?</a>",
+        "title": "(<h2[^>]*>[\\s\\S]*?</h2>|<div class=\"lazyBg\">\\s*<h3[^>]*>[\\s\\S]*?</h3>)",
+        "link": "href=\"([^\"]+)\"",
+        "time": "Picture/(\\d{4}-\\d{2}-\\d{2})/",
+        "summary": "<p[^>]*>([\\s\\S]*?)</p>",
+        "image": "<img[^>]*src=\"([^\"]+)\""
+      },
+      "note": "24 条/次。标题分两种结构：多数条目在 <h2>，没有 h2 的旧条目在 <div class=\"lazyBg\"><h3> 里，所以 title 用「h2 优先、lazyBg>h3 兜底」的交替式。⚠ 千万别直接匹配 <h3>：作者名 h3 在 <div class=\"header\"> 里且常排在 h2 前面，直接匹配会把「王琳茜」「陈可安」当标题（实测 24 条里 10 条中招）。时间只能到天：列表页印的是 10.22 这种月日，完整年月日只存在于封面图路径 img.chuapp.com/.../Picture/YYYY-MM-DD/，因此 time 正则从图片路径抠日期，parseDate 解析成当天 00:00 UTC（= 08:00 CST）——日期是对的，时分没有意义。详情页有精确时间（div.author-time 的 data-time，unix 秒），但要逐条 N+1，本配置不做。"
+    }
+  ]
+}

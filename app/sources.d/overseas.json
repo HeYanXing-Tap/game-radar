@@ -1,0 +1,181 @@
+{
+  "sources": [
+    {
+      "id": "ign",
+      "name": "IGN",
+      "role": "overseas",
+      "region": "global",
+      "type": "rss",
+      "url": "https://feeds.ign.com/ign/all",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 60,
+      "headers": {},
+      "adapter": {},
+      "note": "302 到 www.ign.com/rss/articles/feed（等价），单次 20 条；有 atom:next 可翻页 ?start=20&count=20。description 为空，摘要在 content:encoded 里。"
+    },
+    {
+      "id": "gematsu",
+      "name": "Gematsu",
+      "role": "overseas",
+      "region": "global",
+      "type": "rss",
+      "url": "https://www.gematsu.com/feed",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 60,
+      "headers": {},
+      "adapter": {},
+      "note": "本批信噪比最高的媒体源：标题直接就是档期（XX launches March 4, 2027 in Japan），category 带平台(PC/Switch/PS5)和厂商名，适合筛引进线索。单次 20 条。"
+    },
+    {
+      "id": "eurogamer",
+      "name": "Eurogamer",
+      "role": "overseas",
+      "region": "global",
+      "type": "rss",
+      "url": "https://www.eurogamer.net/feed",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 60,
+      "headers": {},
+      "adapter": {},
+      "note": "单次 100 条，一天的量一次给够。带 dc:creator / category / media:content 图片。"
+    },
+    {
+      "id": "pcgamer",
+      "name": "PC Gamer",
+      "role": "overseas",
+      "region": "global",
+      "type": "rss",
+      "url": "https://www.pcgamer.com/rss/",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 120,
+      "headers": {},
+      "adapter": {},
+      "note": "全文 feed，单次约 5MB（正文全塞 content:encoded），注意带宽；间隔放宽到 120 分钟。"
+    },
+    {
+      "id": "rps",
+      "name": "Rock Paper Shotgun",
+      "role": "overseas",
+      "region": "global",
+      "type": "rss",
+      "url": "https://www.rockpapershotgun.com/feed",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 90,
+      "headers": {},
+      "adapter": {},
+      "note": "单次 100 条。PC/独立游戏口味，对「值得引进的独立游戏」线索有用。"
+    },
+    {
+      "id": "gamesindustry",
+      "name": "GamesIndustry.biz",
+      "role": "overseas",
+      "region": "global",
+      "type": "rss",
+      "url": "https://www.gamesindustry.biz/feed",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 120,
+      "headers": {},
+      "adapter": {},
+      "note": "行业/商业向（并购、财报、人事、发行协议）。游戏本身信息少，但对「某发行商在找亚洲发行」「某 IP 易主」这类引进业务线索价值高。"
+    },
+    {
+      "id": "reddit_r_games",
+      "name": "Reddit r/games",
+      "role": "community",
+      "region": "global",
+      "type": "rss",
+      "url": "https://www.reddit.com/r/games/.rss",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 60,
+      "headers": {
+        "User-Agent": "game-radar/0.1 (by tap-editor)",
+        "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
+      },
+      "adapter": {},
+      "note": "★ 必须用 .rss，hot.json 已被 Reddit 网络层封死（403 blocked by network security，换 UA 无效）。.rss 单次 25 条，Atom，带 updated 时间。UA 必须是自定义的 game-radar/0.1，浏览器 UA 反而 403。列表顺序=热榜位次，当热度用；但 .rss 不返回 score/comments 数值。短时间重复请求会 429，间隔不要低于 60 分钟。"
+    },
+    {
+      "id": "ps_blog",
+      "name": "PlayStation Blog",
+      "role": "platform",
+      "region": "global",
+      "type": "rss",
+      "url": "https://blog.playstation.com/feed/",
+      "tier": 3,
+      "enabled": true,
+      "intervalMin": 120,
+      "headers": {},
+      "adapter": {},
+      "note": "一手官方。第一方新作公布 / State of Play 汇总 / PS Plus 档期。单次 10 条。"
+    },
+    {
+      "id": "xbox_wire",
+      "name": "Xbox Wire",
+      "role": "platform",
+      "region": "global",
+      "type": "rss",
+      "url": "https://news.xbox.com/en-us/feed/",
+      "tier": 3,
+      "enabled": true,
+      "intervalMin": 120,
+      "headers": {},
+      "adapter": {},
+      "note": "一手官方。Game Pass 上下架 + ID@Xbox 独立游戏公布（ID@Xbox 那部分对引进选题最有用）。单次 10 条。"
+    },
+    {
+      "id": "nintendo_whatsnew",
+      "name": "Nintendo（美）资讯",
+      "role": "platform",
+      "region": "global",
+      "type": "html",
+      "url": "https://www.nintendo.com/us/whatsnew/",
+      "tier": 3,
+      "enabled": true,
+      "intervalMin": 180,
+      "headers": {},
+      "adapter": {
+        "rowPattern": "\"__typename\":\"NewsArticle\"[\\s\\S]*?\"slug\":\"[^\"]*\"\\}",
+        "title": "\"title\":\"([^\"]+)\"",
+        "link": "\"url\\([^)]*\\)\":\"([^\"]+)\"",
+        "time": "\"publishDate\":\"([^\"]+)\"",
+        "summary": "\"text\\([^)]*\\)\":\"([^\"]+)\"",
+        "urlPrefix": "https://www.nintendo.com"
+      },
+      "note": "★ 没有 RSS、没有公开 JSON API。页面是 Next.js，文章数据在内嵌的 initialApolloState（Contentful）里，每条是一个 \"__typename\":\"NewsArticle\" … \"slug\":… 的 JSON 对象，title/publishDate/url/摘要都在里面，所以能用 rowPattern 抠出来。publishDate 是 ISO（2026-10-22T16:00:00.000Z），parseDate 能直吃。字段顺序若改版会挂，间隔放宽到 180 分钟。"
+    },
+    {
+      "id": "steam_trending",
+      "name": "Steam 热销/新品/即将发售",
+      "role": "platform",
+      "region": "global",
+      "type": "json",
+      "url": "https://store.steampowered.com/api/featuredcategories?cc=cn&l=schinese",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 60,
+      "headers": {},
+      "adapter": {
+        "sections": ["top_sellers.items", "new_releases.items", "coming_soon.items"],
+        "urlTemplate": "https://store.steampowered.com/app/{id}",
+        "map": {
+          "title": ["name"],
+          "url": [],
+          "summary": [],
+          "publishedAt": [],
+          "image": ["large_capsule_image", "small_capsule_image", "header_image"],
+          "author": []
+        },
+        "enrich": "steamApp",
+        "enrichLimit": 15
+      },
+      "note": "★ 三榜合一（热销 10 / 新品 30 / 即将发售 10），数组顺序自动当 rank 热度，cc=cn&l=schinese 给 CNY 价。enrich=steamApp 会逐条补 appdetails：品类+简介写进 summary、header 图写进 image、已发售游戏的发售日写进 publishedAt、评测总数写进 heat.reviews —— 「值得引进」的核心数值就是 recommendations.total。★ appids 不支持逗号批量（实测 400），enrich 一条一次请求，15 条≈18s，别把 enrichLimit 调太大。未发售游戏 recommendations 为 null。"
+    }
+  ]
+}

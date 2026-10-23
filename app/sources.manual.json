@@ -1,0 +1,48 @@
+{
+  "note": "手动补充的信源。合并时优先级最高，用它覆盖 sources.d 里的同 id 配置。",
+  "sources": [
+    {
+      "id": "yystv",
+      "name": "游研社",
+      "role": "media",
+      "region": "cn",
+      "type": "rss",
+      "url": "https://www.yystv.cn/rss/feed",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 60,
+      "headers": {},
+      "adapter": {},
+      "note": "RSS 2.0，CDATA 包裹，带 pubDate 和摘要。国内少见的稳定 RSS。"
+    },
+    {
+      "id": "tieba-hottopic",
+      "name": "百度贴吧 热议话题榜",
+      "role": "community",
+      "region": "cn",
+      "type": "html",
+      "url": "https://tieba.baidu.com/hottopic/browse/topicList?res_type=1",
+      "tier": 1,
+      "enabled": true,
+      "intervalMin": 45,
+      "headers": {
+        "Referer": "https://tieba.baidu.com/hottopic/browse/hottopic",
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      "adapter": {
+        "rowPattern": "<li class=\"topic-top-item\">[\\s\\S]*?</li>",
+        "title": "class=\"topic-text\"[^>]*>([\\s\\S]*?)</a>",
+        "link": "href=\"([^\"]+)\"",
+        "summary": "topic-top-item-desc\">([\\s\\S]*?)</p>",
+        "image": "<img src=\"([^\"]+)\"",
+        "heat": {
+          "discuss": {
+            "pattern": "([\\d.]+)W",
+            "mult": 10000
+          }
+        }
+      },
+      "note": "贴吧热议话题。热度单位是 W（万），用 mult 换算成真实讨论数。链接靠 query 区分，依赖 extractRows 保留 query 的去重键。"
+    }
+  ]
+}

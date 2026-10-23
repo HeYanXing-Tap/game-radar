@@ -1,0 +1,1181 @@
+{
+  "domain": "overseas",
+  "probedAt": "2026-10-23T11:55:36.161+08:00",
+  "sources": [
+    {
+      "id": "ign",
+      "name": "IGN 全站",
+      "role": "media",
+      "region": "us",
+      "type": "rss",
+      "url": "https://feeds.ign.com/ign/all",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 772,
+      "itemCount": 20,
+      "latestAt": "2026-10-23T10:12:34.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "feeds.ign.com/ign/all 会 302 到 https://www.ign.com/rss/articles/feed（同一份 feed）。RSS 2.0，单次 20 条；有 atom:link rel=\"next\" 分页：?start=20&count=20 可继续翻。字段：title/link/pubDate/content:encoded（正文 HTML，需去标签）。注意：description 为空，摘要要从 content:encoded 取，图片是正文里第一个 <img>。无评论数/热度。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "The Battlestar Galactica Board Game Is Making a Surprise Comeback Next Year",
+          "url": "https://www.ign.com/articles/the-battlestar-galactica-board-game-is-making-a-surprise-comeback-next-year",
+          "publishedAt": "2026-10-23T10:12:34.000+08:00"
+        },
+        {
+          "title": "Clayface Ending Explained",
+          "url": "https://www.ign.com/articles/clayface-ending-explained-batman-dcu",
+          "publishedAt": "2026-10-23T09:00:00.000+08:00"
+        },
+        {
+          "title": "Wo Long 2: Wings of Ember Gets Wuxia… and Let Me Fight a Horrific Spider Thing | IGN Preview",
+          "url": "https://www.ign.com/articles/wo-long-2-wings-of-ember-gets-wuxia-and-let-me-fight-a-horrific-spider-thing-ign-preview",
+          "publishedAt": "2026-10-23T09:00:00.000+08:00"
+        },
+        {
+          "title": "Save $50 Off the Endlessly Useful ASUS ZenScreen 16\" 1080p Portable USB Monitor Ahead of Black Friday",
+          "url": "https://www.ign.com/articles/asus-zenscreen-usb-portable-monitor-deal-october-2026",
+          "publishedAt": "2026-10-23T08:05:00.000+08:00"
+        },
+        {
+          "title": "The Acer Nitro RX 9060 XT Gaming PC Offers Great 1440p Gaming Performance for Just $1,200",
+          "url": "https://www.ign.com/articles/acer-nitro-radeon-rx-9060-xt-gaming-pc-deal-october-2026",
+          "publishedAt": "2026-10-23T08:00:00.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "gematsu",
+      "name": "Gematsu（日系/亚洲新作与档期）",
+      "role": "media",
+      "region": "us",
+      "type": "rss",
+      "url": "https://www.gematsu.com/feed",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 402,
+      "itemCount": 20,
+      "latestAt": "2026-10-23T11:27:01.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "RSS 2.0，单次 20 条，发布节奏快（日更 10+ 条），标题即「XX launches March 4, 2027 in Japan」这种档期信息。字段：title/link/dc:creator/pubDate/category（含平台 PC/Switch/PS5 与厂商名，可直接筛「未在国区发行」的线索）。★ 对「新作公布 + 档期 + 引进」是本批里信噪比最高的媒体源，强烈建议进第一版。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "Next: The Portopia Serial Murder Case launches March 4, 2027 in Japan",
+          "url": "https://www.gematsu.com/2026/10/next-the-portopia-serial-murder-case-launches-march-4-2027-in-japan",
+          "publishedAt": "2026-10-23T11:27:01.000+08:00"
+        },
+        {
+          "title": "Wo Long 2: Wings of Ember Alpha Demo survey results announced",
+          "url": "https://www.gematsu.com/2026/10/wo-long-2-wings-of-ember-alpha-demo-survey-results-announced",
+          "publishedAt": "2026-10-23T09:27:17.000+08:00"
+        },
+        {
+          "title": "Game Boy – Nintendo Classics adds Avenging Spirit, Mole Mania, and Pinball: Revenge of the ‘Gator on October 27",
+          "url": "https://www.gematsu.com/2026/10/game-boy-nintendo-classics-adds-avenging-spirit-mole-mania-and-pinball-revenge-of-the-gator-on-october-27",
+          "publishedAt": "2026-10-23T09:08:51.000+08:00"
+        },
+        {
+          "title": "Dispatch coming to iOS, Android on December 9; Deluxe Edition Commentary and Storyboard modes update now available",
+          "url": "https://www.gematsu.com/2026/10/dispatch-coming-to-ios-android-on-december-9-deluxe-edition-commentary-and-storyboard-modes-update-now-available",
+          "publishedAt": "2026-10-23T00:56:36.000+08:00"
+        },
+        {
+          "title": "Rumor: Canceled Mass Effect: Universe trailer leaked",
+          "url": "https://www.gematsu.com/2026/10/rumor-canceled-mass-effect-universe-trailer-leaked",
+          "publishedAt": "2026-10-23T00:46:13.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "eurogamer",
+      "name": "Eurogamer",
+      "role": "media",
+      "region": "uk",
+      "type": "rss",
+      "url": "https://www.eurogamer.net/feed",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 297,
+      "itemCount": 100,
+      "latestAt": "2026-10-23T01:00:49.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "RSS 2.0，单次 100 条（一次给满 100 条，是本批最多的一家）。字段：title/link/dc:creator/pubDate/category（游戏+平台多标签）/media:content(图片)/description。无热度值。100 条一次够用一天，可当主 feed。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "Smash Bros. director Masahiro Sakurai thinks gen-AI will cause a surge of unoriginal games, but says human creativity can't be replicated",
+          "url": "https://www.eurogamer.net/smash-bros-masahiro-sakurai-generative-ai-unoriginal-games",
+          "publishedAt": "2026-10-23T01:00:49.000+08:00"
+        },
+        {
+          "title": "Farewell BioWare, you inspired so many of us, and you deserved so much better than this",
+          "url": "https://www.eurogamer.net/farewell-bioware-closed-ea",
+          "publishedAt": "2026-10-23T00:45:25.000+08:00"
+        },
+        {
+          "title": "Final Fantasy 14, Umamusume: Pretty Derby, and more impacted as PHP vulnerability outages hit games around the globe",
+          "url": "https://www.eurogamer.net/video-games-down-php-vulnerability",
+          "publishedAt": "2026-10-22T22:11:14.000+08:00"
+        },
+        {
+          "title": "BioWare's cancelled Mass Effect game would've learned from Baldur's Gate 3 and The Witcher to deliver \"a level of autonomy and choice that no other game has\"",
+          "url": "https://www.eurogamer.net/cancelled-mass-effect-bioware-unprecedented-levels-of-autonomy",
+          "publishedAt": "2026-10-22T21:35:34.000+08:00"
+        },
+        {
+          "title": "Despite its mixed reception, Marvel's Wolverine was September's top-selling new game in the US, making Sony launch revenues it hasn't seen since Helldivers 2",
+          "url": "https://www.eurogamer.net/marvels-wolverine-top-seling-september-us-circana",
+          "publishedAt": "2026-10-22T21:22:52.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "pcgamer",
+      "name": "PC Gamer",
+      "role": "media",
+      "region": "us",
+      "type": "rss",
+      "url": "https://www.pcgamer.com/rss/",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 490,
+      "itemCount": 50,
+      "latestAt": "2026-10-23T06:29:10.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "RSS 2.0，单次 50 条。体积大（实测约 5MB，正文全文塞在 content:encoded 里），建议只取 title/pubDate/link，或加 maxlength 截断，否则吃内存。无热度值。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "My GOTY is $7 and has 253 Steam reviews",
+          "url": "https://www.pcgamer.com/games/racing/my-goty-is-usd7-and-has-253-steam-reviews/",
+          "publishedAt": "2026-10-23T06:29:10.000+08:00"
+        },
+        {
+          "title": "A new Fallout 4 mod adds an entire town, but more importantly, it lets you join a gang",
+          "url": "https://www.pcgamer.com/games/fallout/a-new-fallout-4-mod-adds-an-entire-town-but-more-importantly-it-lets-you-join-a-gang/",
+          "publishedAt": "2026-10-23T06:22:04.000+08:00"
+        },
+        {
+          "title": "Epic announces game jam where you have to use AI, then walks back the requirement",
+          "url": "https://www.pcgamer.com/software/ai/epic-announces-game-jam-where-you-have-to-use-ai/",
+          "publishedAt": "2026-10-23T05:39:30.000+08:00"
+        },
+        {
+          "title": "Canadian politician calls on government to help BioWare employees buy the studio and run it themselves",
+          "url": "https://www.pcgamer.com/games/mass-effect/canadian-politician-calls-on-government-to-help-bioware-employees-buy-the-studio-and-run-it-themselves/",
+          "publishedAt": "2026-10-23T05:26:29.000+08:00"
+        },
+        {
+          "title": "Half-Life 3 re-re-re-confirmed: A Valve dev just said 'HLX' out loud",
+          "url": "https://www.pcgamer.com/games/fps/half-life-3-re-re-re-confirmed-a-valve-dev-just-said-hlx-out-loud/",
+          "publishedAt": "2026-10-23T04:16:39.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "rps",
+      "name": "Rock Paper Shotgun",
+      "role": "media",
+      "region": "uk",
+      "type": "rss",
+      "url": "https://www.rockpapershotgun.com/feed",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 293,
+      "itemCount": 100,
+      "latestAt": "2026-10-23T05:50:40.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "RSS 2.0，单次 100 条。字段同 Eurogamer（同属 IGN/Gamer Network 技术栈）：dc:creator/category 多标签/media:content 图片。无热度值。偏 PC 独立游戏口味，对「值得引进的独立游戏」线索有用。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "A Line Held Tight is a charcoal visual novel about a miner's strike in the 32nd century and choosing your relationships wisely",
+          "url": "https://www.rockpapershotgun.com/a-line-held-tight-is-a-charcoal-visual-novel-about-a-miners-strike-in-the-32nd-century-and-choosing-your-relationships-wisely",
+          "publishedAt": "2026-10-23T05:50:40.000+08:00"
+        },
+        {
+          "title": "Robot smashing catharsis game Virtue and a Sledgehammer is out next week, but there's an experimental visual novella prologue you can play right now",
+          "url": "https://www.rockpapershotgun.com/robot-smashing-catharsis-game-virtue-and-a-sledgehammer-is-out-next-week-but-theres-an-experimental-visual-novella-prologue-you-can-play-right-now",
+          "publishedAt": "2026-10-23T04:36:04.000+08:00"
+        },
+        {
+          "title": "An internal Mass Effect 5 trailer has reportedly leaked, offering you a glimpse at the sequel you'll never get to play",
+          "url": "https://www.rockpapershotgun.com/an-internal-mass-effect-5-trailer-has-reportedly-leaked-offering-you-a-glimpse-at-the-sequel-youll-never-get-to-play",
+          "publishedAt": "2026-10-23T01:45:41.000+08:00"
+        },
+        {
+          "title": "Dispatch celebrates its first anniversary with commentary and storyboard modes for every single episode, if you've got the deluxe edition anyway",
+          "url": "https://www.rockpapershotgun.com/dispatch-celebrates-its-first-anniversary-with-commentary-and-storyboard-modes-for-every-single-episode-if-youve-got-the-deluxe-edition-anyway",
+          "publishedAt": "2026-10-23T01:08:54.000+08:00"
+        },
+        {
+          "title": "Even at their most chaotic and conflicted, BioWare were the heart of the western computer RPG",
+          "url": "https://www.rockpapershotgun.com/even-at-their-most-chaotic-and-conflicted-bioware-were-the-heart-of-the-western-computer-rpg",
+          "publishedAt": "2026-10-23T00:30:00.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "gamesindustry",
+      "name": "GamesIndustry.biz（行业/商业）",
+      "role": "media",
+      "region": "uk",
+      "type": "rss",
+      "url": "https://www.gamesindustry.biz/feed",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 287,
+      "itemCount": 100,
+      "latestAt": "2026-10-23T00:15:00.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "RSS 2.0，单次 100 条。偏商业/并购/财报/人事，游戏本身信息少，但对「某发行商在找亚洲发行/某 IP 易主」这类引进业务线索价值高。无热度值。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "\"It was crushing how hard it was\" – The chaotic development of Dispatch, and what AdHoc Studio plans next",
+          "url": "https://www.gamesindustry.biz/it-was-crushing-how-hard-it-was-the-chaotic-development-of-dispatch-and-what-adhoc-studio-plans-next",
+          "publishedAt": "2026-10-23T00:15:00.000+08:00"
+        },
+        {
+          "title": "Marvel's Wolverine leads US September charts, achieves highest monthly dollar sales for a Sony-published title since Helldivers 2",
+          "url": "https://www.gamesindustry.biz/marvels-wolverine-leads-us-september-charts-achieves-highest-monthly-dollar-sales-for-a-sony-published-title-since-helldivers-2",
+          "publishedAt": "2026-10-22T21:00:08.000+08:00"
+        },
+        {
+          "title": "How Pantaloon is curating an \"evolving library of bold and bizarre games\" with its new subscription service",
+          "url": "https://www.gamesindustry.biz/how-pantaloon-is-curating-an-evolving-library-of-bold-and-bizarre-games-with-its-new-subscription-service",
+          "publishedAt": "2026-10-22T19:00:00.000+08:00"
+        },
+        {
+          "title": "Report explores how Roblox can maintain older players as it becomes most-played game by total hours in H1 2026",
+          "url": "https://www.gamesindustry.biz/report-explores-how-roblox-can-maintain-older-players-as-it-becomes-most-played-game-by-total-hours-in-h1-2026",
+          "publishedAt": "2026-10-22T19:00:00.000+08:00"
+        },
+        {
+          "title": "Xbox reveals pricing for cloud gaming limits, starting at $3.99 for 10 hours",
+          "url": "https://www.gamesindustry.biz/xbox-reveals-pricing-for-cloud-gaming-limits-starting-at-399-for-10-hours",
+          "publishedAt": "2026-10-22T17:14:16.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "reddit-r-games",
+      "name": "Reddit r/games",
+      "role": "community",
+      "region": "global",
+      "type": "rss",
+      "url": "https://www.reddit.com/r/games/.rss",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 1323,
+      "itemCount": 25,
+      "latestAt": "2026-10-23T10:27:50.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": false,
+        "image": false,
+        "heat": true,
+        "author": true
+      },
+      "headers": {
+        "User-Agent": "game-radar/0.1 (by tap-editor)",
+        "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
+      },
+      "notes": "★ 入口是 .rss（Atom），不是 hot.json。单次 25 条，无分页参数。字段：title / link / updated（发布时间） / author（/u/xxx） / content（HTML 转义正文）。热度：列表顺序 = hot 榜位次（可当 rank 用）；★ .rss 不返回 score / comments 绝对值（那是 hot.json 才有，已被封）。UA 必须是自定义的 \"game-radar/0.1 (by tap-editor)\"，浏览器 UA 反而 403。限流：短时间内重复请求会 429，建议 intervalMin ≥ 60。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "Daily /r/Games Discussion - Suggest Me a Game - October 21, 2026",
+          "url": "https://www.reddit.com/r/Games/comments/1xbk2nh/daily_rgames_discussion_suggest_me_a_game_october/",
+          "publishedAt": "2026-10-21T19:00:43.000+08:00"
+        },
+        {
+          "title": "Baldur's Gate 3 has surpassed 23 million copies sold, generating over $1.2 billion in revenue",
+          "url": "https://www.reddit.com/r/Games/comments/1xcrlqt/baldurs_gate_3_has_surpassed_23_million_copies/",
+          "publishedAt": "2026-10-23T03:04:43.000+08:00"
+        },
+        {
+          "title": "BioWare Reportedly Had a Mass Effect 5 Trailer Ready to Go Before EA Canceled the Game and Shut the Studio Down",
+          "url": "https://www.reddit.com/r/Games/comments/1xcmo7v/bioware_reportedly_had_a_mass_effect_5_trailer/",
+          "publishedAt": "2026-10-23T00:04:10.000+08:00"
+        },
+        {
+          "title": "Cancelled Mass Effect Universe: Trailer Leaks",
+          "url": "https://www.reddit.com/r/Games/comments/1xcn51i/cancelled_mass_effect_universe_trailer_leaks/",
+          "publishedAt": "2026-10-23T00:21:15.000+08:00"
+        },
+        {
+          "title": "Hackers Have Unlocked Homebrew Access On Switch 2 Less Than 24 Hours After Its First Jailbreak",
+          "url": "https://www.reddit.com/r/Games/comments/1xd1ahz/hackers_have_unlocked_homebrew_access_on_switch_2/",
+          "publishedAt": "2026-10-23T09:55:27.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "steam-featuredcategories",
+      "name": "Steam 特色分类（热销/新品/即将发售）",
+      "role": "platform",
+      "region": "global",
+      "type": "json",
+      "url": "https://store.steampowered.com/api/featuredcategories?cc=cn&l=schinese",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 314,
+      "itemCount": 40,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": true,
+        "image": true,
+        "heat": true,
+        "author": false
+      },
+      "headers": {},
+      "notes": "单次拿到 top_sellers 10 条、new_releases 30 条、coming_soon 10 条、specials 10 条（中国大陆 cc=cn&l=schinese，价格 CNY）。字段：id/name/discounted/discount_percent/original_price/final_price/currency/header_image/large_capsule_image。热度：只有「数组顺序=榜单名次」这层相对热度，没有绝对数值。无发布时间、无发售日、无评价数、无愿望单量。无分页参数，每个榜单上限 10（new_releases 例外，30 条）。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "使命召唤®：现代战争® 4",
+          "url": "https://store.steampowered.com/app/4435490",
+          "publishedAt": null
+        },
+        {
+          "title": "影之刃零",
+          "url": "https://store.steampowered.com/app/4115450",
+          "publishedAt": null
+        },
+        {
+          "title": "影之刃零",
+          "url": "https://store.steampowered.com/app/4115450",
+          "publishedAt": null
+        },
+        {
+          "title": "使命召唤®：现代战争® 4",
+          "url": "https://store.steampowered.com/app/4435490",
+          "publishedAt": null
+        },
+        {
+          "title": "FINAL FANTASY RESONANCE",
+          "url": "https://store.steampowered.com/app/3259780",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "steam-featured",
+      "name": "Steam 首页推荐位（featured）",
+      "role": "platform",
+      "region": "global",
+      "type": "json",
+      "url": "https://store.steampowered.com/api/featured?cc=cn&l=schinese",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 296,
+      "itemCount": 30,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": false
+      },
+      "headers": {},
+      "notes": "featured_win 10 / featured_mac 10 / featured_linux 10 / large_capsules 0，三平台大量重复，去重后 27 款。字段：id/name/discounted/discount_percent/original_price/final_price/currency/large_capsule_image。仅首页编排位，无排名含金量、无时间、无评价与愿望单数据；对「引进选题」价值低于 featuredcategories。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "ONE PIECE 海洋盛宴",
+          "url": "https://store.steampowered.com/app/3905010",
+          "publishedAt": null
+        },
+        {
+          "title": "永不落败 Every Day We Fight",
+          "url": "https://store.steampowered.com/app/1546080",
+          "publishedAt": null
+        },
+        {
+          "title": "FINAL FANTASY RESONANCE",
+          "url": "https://store.steampowered.com/app/3259780",
+          "publishedAt": null
+        },
+        {
+          "title": "Groundwork Simulator",
+          "url": "https://store.steampowered.com/app/5306540",
+          "publishedAt": null
+        },
+        {
+          "title": "魔卓拉",
+          "url": "https://store.steampowered.com/app/1713730",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "steam-appnews",
+      "name": "Steam 官方公告流（ISteamNews GetNewsForApp）",
+      "role": "platform",
+      "region": "global",
+      "type": "json",
+      "url": "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=730&count=20&maxlength=300&format=json",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 291,
+      "itemCount": 20,
+      "latestAt": "2026-10-23T06:56:10.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": false,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "appid=730（CS2）单次 20 条。字段：gid/title/url/author/contents/feedlabel/date(Unix 秒)/feedname/feed_type/appid/tags。要闻可用 count=50；如需全站公告聚合，改走 store.steampowered.com/news 的 partner 聚合（需另测）。注意：这是「厂商公告/更新日志」，不是媒体新闻，无热度值。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "Counter-Strike 2 Update",
+          "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1847286114034398",
+          "publishedAt": "2026-10-23T06:56:10.000+08:00"
+        },
+        {
+          "title": "Games with loot boxes and other \"paid random items\" re-rated PEGI 16 as new rules come into force, hopefully cutting down on kids gambling somewhat",
+          "url": "https://steamstore-a.akamaihd.net/news/externalpost/Rock, Paper, Shotgun/1846651706695791",
+          "publishedAt": "2026-10-20T22:45:11.000+08:00"
+        },
+        {
+          "title": "Counter-Strike 2 Update",
+          "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1846651706675829",
+          "publishedAt": "2026-10-15T07:02:48.000+08:00"
+        },
+        {
+          "title": "Valve ускорила перезарядку AUG в Counter-Strike 2 и исправила ошибки на картах Rush в свежем обновлении",
+          "url": "https://steamstore-a.akamaihd.net/news/externalpost/PlayGround.ru - официальная группа/1846018067932423",
+          "publishedAt": "2026-10-09T15:28:45.000+08:00"
+        },
+        {
+          "title": "Counter-Strike 2 Update",
+          "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1846018067931597",
+          "publishedAt": "2026-10-09T06:36:49.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "steam-appdetails",
+      "name": "Steam 单品详情（appdetails，含评价数与发售日）",
+      "role": "signal",
+      "region": "global",
+      "type": "json",
+      "url": "https://store.steampowered.com/api/appdetails?appids=1091500&cc=cn&l=schinese",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 282,
+      "itemCount": 5,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": true,
+        "image": true,
+        "heat": true,
+        "author": true
+      },
+      "headers": {},
+      "notes": "★ appids 参数不支持逗号批量：实测 appids=a,b,c 直接 400（返回 4 字节），必须一个 appid 一次请求，所以本项 = 5 次请求（≈1.4s，受同域 ≥1s 限速）。★ 引进判断可用字段（都是可比数值/结构化）：recommendations.total（全站累计评测数，实测 1091500=900,060）、metacritic.score、price_overview.final + currency（cc=cn 返回 CNY）、release_date.date + release_date.coming_soon、genres / categories / developers / publishers / supported_languages / platforms。★ 未发售游戏 recommendations 为 null —— 新游拿不到任何量级数值；接口完全不返回愿望单数 / 关注数。无 publishedAt 概念（只有发售日）。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "赛博朋克 2077",
+          "url": "https://store.steampowered.com/app/1091500",
+          "publishedAt": null
+        },
+        {
+          "title": "使命召唤®：现代战争® 4",
+          "url": "https://store.steampowered.com/app/4435490",
+          "publishedAt": null
+        },
+        {
+          "title": "Smol Adventure",
+          "url": "https://store.steampowered.com/app/3355230",
+          "publishedAt": null
+        },
+        {
+          "title": "Dota 2",
+          "url": "https://store.steampowered.com/app/570",
+          "publishedAt": null
+        },
+        {
+          "title": "Counter-Strike 2",
+          "url": "https://store.steampowered.com/app/730",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "steam-comingsoon",
+      "name": "Steam 即将发售榜（coming soon）",
+      "role": "platform",
+      "region": "global",
+      "type": "html",
+      "url": "https://store.steampowered.com/search/?filter=comingsoon&cc=cn&l=schinese&count=50&ignore_preferences=1",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 457,
+      "itemCount": 50,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": true,
+        "image": false,
+        "heat": false,
+        "author": false
+      },
+      "headers": {},
+      "notes": "HTML 服务端渲染，单次 count 参数可到 50（实测 20 条）。页面报告共 8,597 个匹配结果，分页用 &start=0&count=50 递增。每行可解析：data-ds-appid、<span class=\"title\">、search_released（★这些是「发售日」不是发布时间）、search_review_summary 的 data-tooltip-html（★含「888 篇用户评测中 75% 为好评」这类可比数值）、data-ds-tagids（标签 ID 数组）、data-price-final。注意：l=schinese 时评测数只统计「中文评测」（页面原文有说明），要拿全量口径需 l=english 或改用 appdetails.recommendations.total。★ filter=comingsoon 默认按「发售日升序」排，头部全是当天/本周就要上的小体量游戏，不是「高关注」排序。排序参数实测：页面里没有任何 data-sort 选项，sort_by=Released_DESC 被忽略；Steam 搜索不支持按愿望单排序。想要「热门即将发售」，只有 featuredcategories 里的 coming_soon 那 10 个（Steam 官方编排），没有别的公开口子。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "山海引擎 - 南宋天文图",
+          "url": "https://store.steampowered.com/app/5476840",
+          "publishedAt": null
+        },
+        {
+          "title": "巢床生活~一日三餐带点心的幸福人牲~",
+          "url": "https://store.steampowered.com/app/3841050",
+          "publishedAt": null
+        },
+        {
+          "title": "CLACKPOT: Marble Bounce Roguelike Demo",
+          "url": "https://store.steampowered.com/app/5383550",
+          "publishedAt": null
+        },
+        {
+          "title": "使命召唤®：现代战争® 4",
+          "url": "https://store.steampowered.com/app/4435490",
+          "publishedAt": null
+        },
+        {
+          "title": "Evercoil Demo",
+          "url": "https://store.steampowered.com/app/5335900",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "steam-tag-comingsoon-indie",
+      "name": "Steam 标签筛选：即将发售 + 独立（tags=492）",
+      "role": "signal",
+      "region": "global",
+      "type": "html",
+      "url": "https://store.steampowered.com/search/?filter=comingsoon&tags=492&cc=cn&l=schinese&count=50&ignore_preferences=1",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 361,
+      "itemCount": 50,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": true,
+        "image": false,
+        "heat": false,
+        "author": false
+      },
+      "headers": {},
+      "notes": "HTML 服务端渲染，单次 count 参数可到 50（实测 20 条）。页面报告共 4,878 个匹配结果，分页用 &start=0&count=50 递增。每行可解析：data-ds-appid、<span class=\"title\">、search_released（★这些是「发售日」不是发布时间）、search_review_summary 的 data-tooltip-html（★含「888 篇用户评测中 75% 为好评」这类可比数值）、data-ds-tagids（标签 ID 数组）、data-price-final。注意：l=schinese 时评测数只统计「中文评测」（页面原文有说明），要拿全量口径需 l=english 或改用 appdetails.recommendations.total。★ 按标签筛可行：&tags=492 生效（492=Indie，常用：19=Action、21=Adventure、9=Strategy、122=RPG、599=Simulation），多标签用逗号「tags=492,19」。实测结果里每行都带 data-ds-tagids，可自行复核是否真命中 492（少数行 tagids 不全，需兜底）。但「高关注」这个维度无法作为参数——Steam 不公开愿望单数，也没有按关注度排序的公开接口。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "CLACKPOT: Marble Bounce Roguelike Demo",
+          "url": "https://store.steampowered.com/app/5383550",
+          "publishedAt": null
+        },
+        {
+          "title": "Evercoil Demo",
+          "url": "https://store.steampowered.com/app/5335900",
+          "publishedAt": null
+        },
+        {
+          "title": "Moon Sweepers",
+          "url": "https://store.steampowered.com/app/5335510",
+          "publishedAt": null
+        },
+        {
+          "title": "Hubble Bubble",
+          "url": "https://store.steampowered.com/app/5013160",
+          "publishedAt": null
+        },
+        {
+          "title": "桌面出租车",
+          "url": "https://store.steampowered.com/app/4006760",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "ps-blog",
+      "name": "PlayStation Blog（官方）",
+      "role": "platform",
+      "region": "us",
+      "type": "rss",
+      "url": "https://blog.playstation.com/feed/",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 2311,
+      "itemCount": 10,
+      "latestAt": "2026-10-22T22:00:31.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "WordPress RSS 2.0，单次 10 条。字段：title/link/dc:creator/pubDate/category/content:encoded。是第一方新作公布、State of Play 汇总、PS Plus 档期的一手源。无热度值。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "Marvel’s Wolverine: Photo Mode guide",
+          "url": "https://blog.playstation.com/2026/10/22/marvels-wolverine-photo-mode-guide/",
+          "publishedAt": "2026-10-22T22:00:31.000+08:00"
+        },
+        {
+          "title": "PlayStation Store: September 2026’s top downloads",
+          "url": "https://blog.playstation.com/2026/10/22/playstation-store-september-2026s-top-downloads/",
+          "publishedAt": "2026-10-22T21:00:25.000+08:00"
+        },
+        {
+          "title": "Tomb Raider: Legacy of Atlantis – the evolution of Lara Croft’s design",
+          "url": "https://blog.playstation.com/2026/10/22/tomb-raider-legacy-of-atlantis-the-evolution-of-lara-crofts-design/",
+          "publishedAt": "2026-10-22T19:59:38.000+08:00"
+        },
+        {
+          "title": "Once Human’s Isles of Abyss expansion launches on PS5 tomorrow",
+          "url": "https://blog.playstation.com/2026/10/21/once-humans-isles-of-abyss-expansion-launches-on-ps5-tomorrow/",
+          "publishedAt": "2026-10-22T01:00:37.000+08:00"
+        },
+        {
+          "title": "PlayStation Indies: 9 must-play horror games for the spooky season",
+          "url": "https://blog.playstation.com/2026/10/21/playstation-indies-9-must-play-horror-games-for-the-spooky-season/",
+          "publishedAt": "2026-10-22T00:00:31.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "xbox-wire",
+      "name": "Xbox Wire（官方）",
+      "role": "platform",
+      "region": "us",
+      "type": "rss",
+      "url": "https://news.xbox.com/en-us/feed/",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 620,
+      "itemCount": 10,
+      "latestAt": "2026-10-23T03:00:00.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": false,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "WordPress RSS 2.0，单次 10 条。字段同 PS Blog。含 Game Pass 上下架、ID@Xbox 独立游戏公布——ID@Xbox 那部分对引进选题很有用。无热度值。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "How More Than 40 New Traits Change Your Strategy in Becastled",
+          "url": "https://news.xbox.com/en-us/2026/10/22/how-more-than-40-new-traits-change-your-strategy/",
+          "publishedAt": "2026-10-23T03:00:00.000+08:00"
+        },
+        {
+          "title": "The Power of PEAK Friendship, Coming to XBOX Today",
+          "url": "https://news.xbox.com/en-us/2026/10/22/peak-friendship-coming-to-xbox-today/",
+          "publishedAt": "2026-10-23T01:00:00.000+08:00"
+        },
+        {
+          "title": "Call of Duty: Modern Warfare 4 w/Devs – Campaign, Multiplayer, DMZ, and More | Official XBOX Podcast",
+          "url": "https://news.xbox.com/en-us/2026/10/22/call-of-duty-modern-warfare-4-w-devs-campaign-multiplayer-dmz-and-more-official-xbox-podcast/",
+          "publishedAt": "2026-10-23T00:15:45.000+08:00"
+        },
+        {
+          "title": "FINAL FANTASY RESONANCE is a Delightful Return to the Series’ Classic Roots",
+          "url": "https://news.xbox.com/en-us/2026/10/22/final-fantasy-resonance-available-now/",
+          "publishedAt": "2026-10-23T00:00:00.000+08:00"
+        },
+        {
+          "title": "Free Play Days – Dying Light 2, Riders Republic, Monster Hunter Stories, Let’s Build a Zoo, and More",
+          "url": "https://news.xbox.com/en-us/2026/10/22/free-play-days-10-22-2026/",
+          "publishedAt": "2026-10-22T23:00:00.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "nintendo-whatsnew",
+      "name": "Nintendo（美）Whatsnew 官方资讯",
+      "role": "platform",
+      "region": "us",
+      "type": "html",
+      "url": "https://www.nintendo.com/us/whatsnew/",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 647,
+      "itemCount": 30,
+      "latestAt": "2026-10-23T00:00:00.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": false,
+        "image": false,
+        "heat": false,
+        "author": false
+      },
+      "headers": {},
+      "notes": "Next.js SSR 页面，文章列表（30 条）直接从 HTML 抓：<a aria-label=\"标题\" href=\"/us/whatsnew/<slug>/\">；发布时间藏在页面内嵌的 Contentful JSON 里（\"publishDate\":\"2026-10-22T16:00:00.000Z\"），用「publishDate 紧跟 /us/whatsnew/<slug>/」配对，实测 30 条可配对。无 RSS、无公开 JSON API、无摘要/图片/热度。仅供「任天堂第一方/独占情报」用，量少（约 1-2 条/天）。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "Grab your headband and get ready to move in Nintendo Switch Sports Resort!",
+          "url": "https://www.nintendo.com/us/whatsnew/grab-your-headband-and-get-ready-to-move-in-nintendo-switch-sports-resort/",
+          "publishedAt": "2026-10-23T00:00:00.000+08:00"
+        },
+        {
+          "title": "Icon elements inspired by the Nintendo Switch Sports Resort game are here for a limited time",
+          "url": "https://www.nintendo.com/us/whatsnew/icon-elements-inspired-by-the-nintendo-switch-sports-resort-game-are-here-for-a-limited-time/",
+          "publishedAt": "2026-10-22T00:00:00.000+08:00"
+        },
+        {
+          "title": "Screaming Deals: Save on select digital games",
+          "url": "https://www.nintendo.com/us/whatsnew/screaming-deals-save-on-select-digital-games/",
+          "publishedAt": "2026-10-21T00:00:00.000+08:00"
+        },
+        {
+          "title": "Here's every Resident Evil game available for Nintendo Switch 2 or Nintendo Switch!",
+          "url": "https://www.nintendo.com/us/whatsnew/heres-every-resident-evil-game-available-for-nintendo-switch-2-or-nintendo-switch/",
+          "publishedAt": "2026-10-20T00:00:00.000+08:00"
+        },
+        {
+          "title": "Get up and move in Nintendo Switch Sports Resort!",
+          "url": "https://www.nintendo.com/us/whatsnew/get-up-and-move-in-nintendo-switch-sports-resort/",
+          "publishedAt": "2026-10-20T00:00:00.000+08:00"
+        }
+      ]
+    },
+    {
+      "id": "tga-news",
+      "name": "The Game Awards 官网新闻",
+      "role": "platform",
+      "region": "us",
+      "type": "html",
+      "url": "https://thegameawards.com/news",
+      "verified": false,
+      "httpStatus": 200,
+      "latencyMs": 734,
+      "itemCount": 3,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": false,
+        "image": false,
+        "heat": false,
+        "author": false
+      },
+      "headers": {},
+      "notes": "Next.js 页面，服务端只渲染出 3 条 /news/ 链接（票务、日期、去年数据），信息密度极低；无 RSS、无 JSON 接口。TGA 的「新作公布」实际传播渠道是 IGN/Eurogamer 的报道，抓媒体源更快更全。",
+      "failure": "只解析到 3 条带标题条目（< 5）",
+      "sample": [
+        {
+          "title": "Public Tickets on Sale October 29",
+          "url": "https://thegameawards.com/news/public-tickets-on-sale-october-29",
+          "publishedAt": null
+        },
+        {
+          "title": "TGA Returns December 10, 2026",
+          "url": "https://thegameawards.com/news/tga-returns-december-10-2026",
+          "publishedAt": null
+        },
+        {
+          "title": "The Game Awards 2025 Delivers 171 Million Livestreams",
+          "url": "https://thegameawards.com/news/the-game-awards-2025-breaks-record-171-million-livestreams",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "dayofthedevs",
+      "name": "Day of the Devs（独立游戏展）",
+      "role": "platform",
+      "region": "us",
+      "type": "html",
+      "url": "https://www.dayofthedevs.com/news",
+      "verified": false,
+      "httpStatus": 200,
+      "latencyMs": 1379,
+      "itemCount": 10,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": false,
+        "image": false,
+        "heat": false,
+        "author": false
+      },
+      "headers": {},
+      "notes": "新闻列表只是把标题链接到 dayofthedevs.org（跨域），列表页无发布时间、无摘要；/games 花名册页 962KB 但内容由 JS 渲染，源码里 0 个 Steam/itch 链接。无 RSS。结论：DotD 的选品名单拿不到结构化数据，建议直接盯它公布的 Steam 页面。",
+      "failure": "拿到 10 条标题，但 0 条发布时间 —— 无 publishedAt，做不了时效判断",
+      "sample": [
+        {
+          "title": "Day of the Devs: Summer Game Fest Edition 2025",
+          "url": "https://www.dayofthedevs.org/news/day-of-the-devs-summer-game-fest-edition-2025",
+          "publishedAt": null
+        },
+        {
+          "title": "Day of the Devs: Summer Game Fest Edition Returns on June 6",
+          "url": "https://www.dayofthedevs.org/news/day-of-the-devs-summer-game-fest-edition-returns-on-june-6",
+          "publishedAt": null
+        },
+        {
+          "title": "Day of the Devs Reveals Partner Roster for San Francisco and GDC Edition",
+          "url": "https://www.dayofthedevs.org/news/day-of-the-devs-reveals-partner-roster-for-san-francisco-and-gdc-edition",
+          "publishedAt": null
+        },
+        {
+          "title": "Day of the Devs: San Francisco Edition + GDC",
+          "url": "https://www.dayofthedevs.org/news/day-of-the-devs-san-francisco-edition-gdc",
+          "publishedAt": null
+        },
+        {
+          "title": "Day of the Devs: The Game Awards Edition 2024 Roster Reveal",
+          "url": "https://www.dayofthedevs.org/news/day-of-the-devs-the-game-awards-edition-2024-roster-reveal",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "summergamefest",
+      "name": "Summer Game Fest 官网",
+      "role": "platform",
+      "region": "us",
+      "type": "html",
+      "url": "https://www.summergamefest.com/events",
+      "verified": false,
+      "httpStatus": 200,
+      "latencyMs": 478,
+      "itemCount": 1,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": false,
+        "image": false,
+        "heat": false,
+        "author": false
+      },
+      "headers": {},
+      "notes": "只有 18 个发布会条目（Day of the Devs / Nintendo Direct / State of Play / PC Gaming Show 等），页面里 0 个日期字符串、无 RSS、无 JSON。可以当「档期日历」人工看，做不了自动信源。",
+      "failure": "只解析到 1 条带标题条目（< 5）",
+      "sample": [
+        {
+          "title": "Rewatch Summer Game Fest 2026",
+          "url": "https://www.summergamefest.com/events/summer-game-fest",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "steamdb-mostwished",
+      "name": "SteamDB 愿望单排行",
+      "role": "signal",
+      "region": "global",
+      "type": "html",
+      "url": "https://steamdb.info/stats/mostwished/",
+      "verified": false,
+      "httpStatus": 403,
+      "latencyMs": 262,
+      "itemCount": 0,
+      "latestAt": null,
+      "fields": {
+        "title": false,
+        "link": false,
+        "publishedAt": false,
+        "summary": false,
+        "image": false,
+        "heat": false,
+        "author": false
+      },
+      "headers": {},
+      "notes": "实测三路由全部 403：/stats/mostwished/、/charts、首页。按约束不破 Cloudflare。SteamDB 无公开 API（有付费 Patreon 档；其数据源为 Steam 官方接口+自建爬虫，愿望单数本身 Steam 不公开）。结论：拿不到「愿望单量级」这个核心数值。替代路线见 overseas.md。",
+      "failure": "HTTP 403：Cloudflare 反爬挑战页（返回恒定 ~10KB 的 <title>SteamDB</title> 空壳），HTML 抓不到数据",
+      "sample": []
+    },
+    {
+      "id": "itch-newest",
+      "name": "itch.io 最新上架",
+      "role": "signal",
+      "region": "global",
+      "type": "html",
+      "url": "https://itch.io/games/newest",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 946,
+      "itemCount": 36,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": false,
+        "image": false,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "纯 HTML，36 条/页，分页用 ?page=2。★ 无 RSS、无 JSON API：实测 /games/newest.rss、/games.rss、/games/newest.json 全部 404；?format=rss 返回的是同一份 HTML。每条可拿：标题、游戏页 URL、作者子域（=开发者）。★ 列表页没有「发布时间 / 播放量 / 评分 / 评论数」任何数值（发布时间要进详情页才有），所以 itch 只能做「新游发现」，无法做量级比较；官方 API（api/1）需要注册 key。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "Fishing For Trouble [PC Version]",
+          "url": "https://agapegames.itch.io/fishing-for-trouble-pc-version",
+          "publishedAt": null
+        },
+        {
+          "title": "Echidnomics: Minimum Wage Monster Crafting",
+          "url": "https://namelocrennad.itch.io/echidnomics",
+          "publishedAt": null
+        },
+        {
+          "title": "NONOPIX 3: Around the World in Pixels",
+          "url": "https://recruta-zero.itch.io/nonopix-3",
+          "publishedAt": null
+        },
+        {
+          "title": "Chef Vamp",
+          "url": "https://calibench.itch.io/chef-vamp",
+          "publishedAt": null
+        },
+        {
+          "title": "NXZASQD2015",
+          "url": "https://justonce.itch.io/nxzasqd2015",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "itch-top-rated",
+      "name": "itch.io 最高评分",
+      "role": "signal",
+      "region": "global",
+      "type": "html",
+      "url": "https://itch.io/games/top-rated",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 466,
+      "itemCount": 36,
+      "latestAt": null,
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": false,
+        "summary": false,
+        "image": false,
+        "heat": false,
+        "author": true
+      },
+      "headers": {},
+      "notes": "纯 HTML，36 条/页，分页用 ?page=2。★ 无 RSS、无 JSON API：实测 /games/newest.rss、/games.rss、/games/newest.json 全部 404；?format=rss 返回的是同一份 HTML。每条可拿：标题、游戏页 URL、作者子域（=开发者）。★ 列表页没有「发布时间 / 播放量 / 评分 / 评论数」任何数值（发布时间要进详情页才有），所以 itch 只能做「新游发现」，无法做量级比较；官方 API（api/1）需要注册 key。",
+      "failure": null,
+      "sample": [
+        {
+          "title": "The Freak Circus",
+          "url": "https://garula.itch.io/the-freak-circus",
+          "publishedAt": null
+        },
+        {
+          "title": "​Our Life: Beginnings & Always",
+          "url": "https://gbpatch.itch.io/our-life",
+          "publishedAt": null
+        },
+        {
+          "title": "Adventures With Anxiety!",
+          "url": "https://ncase.itch.io/anxiety",
+          "publishedAt": null
+        },
+        {
+          "title": "HoloCure",
+          "url": "https://kay-yu.itch.io/holocure",
+          "publishedAt": null
+        },
+        {
+          "title": "A Date with Death",
+          "url": "https://twoandahalfstudios.itch.io/a-date-with-death",
+          "publishedAt": null
+        }
+      ]
+    },
+    {
+      "id": "youtube-ign",
+      "name": "YouTube 频道 · IGN（官方 RSS，免 API key）",
+      "role": "media",
+      "region": "global",
+      "type": "rss",
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCKy1dAqELo0zrOtPkf0eTMw",
+      "verified": true,
+      "httpStatus": 200,
+      "latencyMs": 351,
+      "itemCount": 15,
+      "latestAt": "2026-10-23T10:35:30.000+08:00",
+      "fields": {
+        "title": true,
+        "link": true,
+        "publishedAt": true,
+        "summary": true,
+        "image": true,
+        "heat": true,
+        "author": true
+      },
+      "headers": {},
+      "notes": "免 API key！单次固定 15 条（YouTube 硬上限，无分页）。★ 热度字段：media:statistics views（播放量）、media:starRating count（点赞数）—— 是绝对值，可比较。★ 该端点会间歇性 404：同一 URL 连续打，有时 200 有时 404（实测踩到过），必须\"失败重试 1 次 + 换 UA\"，本脚本已内置。★ 需要浏览器 UA；纯 \"Mozilla/5.0 Chrome/120\" 这种短串会 404，用完整 Chrome UA 或 UA_CHROME_SHORT。换频道只需替换 channel_id（从频道页 HTML 的 externalId / meta[itemprop=identifier] 取，IGN=UCKy1dAqELo0zrOtPkf0eTMw）。不用 YouTube Data API v3（那个要 key + 每日配额）。（本次运行触发了 1 次重试才成功）",
+      "failure": null,
+      "sample": [
+        {
+          "title": "Laika's incredible stop motion animation strikes again",
+          "url": "https://www.youtube.com/watch?v=vVJbG4RKjDg",
+          "publishedAt": "2026-10-23T10:35:30.000+08:00"
+        },
+        {
+          "title": "It ain't GTA without grand theft auto",
+          "url": "https://www.youtube.com/watch?v=zn7gwGfaO8o",
+          "publishedAt": "2026-10-23T10:34:39.000+08:00"
+        },
+        {
+          "title": "BioWare was an iconic game studio",
+          "url": "https://www.youtube.com/watch?v=dDOyrqre_fU",
+          "publishedAt": "2026-10-23T10:33:59.000+08:00"
+        },
+        {
+          "title": "Dispatch's new content for the 1 year anniversary",
+          "url": "https://www.youtube.com/watch?v=hNrLx_guGow",
+          "publishedAt": "2026-10-23T10:33:30.000+08:00"
+        },
+        {
+          "title": "Dispatch's commentary track mode reveals behind the scenes facts",
+          "url": "https://www.youtube.com/watch?v=MRbHn-LVjvo",
+          "publishedAt": "2026-10-23T10:32:51.000+08:00"
+        }
+      ]
+    }
+  ],
+  "rejected": [
+    {
+      "name": "The Game Awards 官网新闻",
+      "reason": "只解析到 3 条带标题条目（< 5）",
+      "tried": [
+        "https://thegameawards.com/news"
+      ]
+    },
+    {
+      "name": "Day of the Devs（独立游戏展）",
+      "reason": "拿到 10 条标题，但 0 条发布时间 —— 无 publishedAt，做不了时效判断",
+      "tried": [
+        "https://www.dayofthedevs.com/news"
+      ]
+    },
+    {
+      "name": "Summer Game Fest 官网",
+      "reason": "只解析到 1 条带标题条目（< 5）",
+      "tried": [
+        "https://www.summergamefest.com/events"
+      ]
+    },
+    {
+      "name": "SteamDB 愿望单榜",
+      "reason": "HTTP 403：Cloudflare 反爬挑战页（返回恒定 ~10KB 的 <title>SteamDB</title> 空壳），HTML 抓不到数据",
+      "tried": [
+        "https://steamdb.info/stats/mostwished/",
+        "https://steamdb.info/charts/",
+        "https://steamdb.info/"
+      ]
+    }
+  ]
+}
