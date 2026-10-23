@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>游戏资讯雷达</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>游戏资讯雷达</h1>
+          <p class="sub">选题雷达 · 作品雷达 <span id="statline"></span></p>
+        </div>
+      </div>
+      <nav class="tabs" id="tabs">
+        <button data-view="topic" class="on">选题 <kbd>1</kbd></button>
+        <button data-view="game">作品 <kbd>2</kbd></button>
+        <button data-view="hot">热点 <kbd>3</kbd></button>
+        <button data-view="digest">日报 <kbd>4</kbd></button>
+        <button data-view="sources">信源 <kbd>5</kbd></button>
+      </nav>
+      <div class="controls">
+        <select id="days">
+          <option value="1">近 24 小时</option>
+          <option value="3" selected>近 3 天</option>
+          <option value="7">近 7 天</option>
+        </select>
+        <label class="chk"><input type="checkbox" id="all" /> 显示未过门槛</label>
+      </div>
+    </header>
+
+    <main>
+      <section id="view-topic" class="view"></section>
+      <section id="view-game" class="view hidden"></section>
+      <section id="view-hot" class="view hidden"></section>
+      <section id="view-digest" class="view hidden"></section>
+      <section id="view-sources" class="view hidden"></section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
