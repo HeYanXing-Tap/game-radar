@@ -6,10 +6,24 @@ mkdirSync(DATA_DIR, { recursive: true });
 
 export const db = new DatabaseSync(DB_PATH);
 
+// --- 轻量迁移：老库补列，新库建表时就带上 ---
+function ensureColumn(table: string, column: string, def: string): void {
+  try {
+    const cols = db.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>;
+    if (!cols.some((c) => c.name === column)) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${def}`);
+    }
+  } catch {
+    /* 表还不存在时交给建表语句 */
+  }
+}
+
+
 db.exec(`
 PRAGMA journal_mode = WAL;
 PRAGMA synchronous = NORMAL;
 PRAGMA foreign_keys = ON;
+
 
 CREATE TABLE IF NOT EXISTS sources (
   id            TEXT PRIMARY KEY,
@@ -123,6 +137,13 @@ CREATE TABLE IF NOT EXISTS runs (
   stats_json  TEXT
 );
 `);
+
+// 展示用的中文译名，抓取/聚类/打分仍用原文
+ensureColumn('items', 'title_zh', 'TEXT');
+ensureColumn('items', 'summary_zh', 'TEXT');
+ensureColumn('events', 'title_zh', 'TEXT');
+// 内容相关性：game/acg/tech/society/off，off 的不进热点榜
+ensureColumn('prescreen', 'related', 'TEXT');
 
 /** ---------- 小工具 ---------- */
 

@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { fetchSource } from './collector.ts';
 import { cluster, computeHeat } from './cluster.ts';
 import { scorePending, board, recordRun } from './pipeline.ts';
+import { translatePending } from './translate.ts';
 import { prescreenQueue } from './prescreen.ts';
 import { buildDigest } from './digest.ts';
 import { exportStatic, prune } from './export.ts';
@@ -77,6 +78,12 @@ async function main(): Promise<void> {
       return;
     }
 
+    case 'translate': {
+      const t = await translatePending({ limit: Number(flag('limit') ?? 600) });
+      console.log(`翻译完成：${t.translated} 条，${t.batches} 批，失败 ${t.failed} 批`);
+      return;
+    }
+
     case 'digest': {
       await buildDigest(flag('date'));
       return;
@@ -94,12 +101,14 @@ async function main(): Promise<void> {
       log('4/6 预筛（标题粗排，便宜）');
       const pt = await prescreenQueue('topic', { days: 2 });
       const pg = await prescreenQueue('game', { days: 2 });
-      log('5/6 细评（五轴打分，只打过线的）');
+      log('5/7 翻译英文标题');
+      const tr = await translatePending({ limit: 300 });
+      log('6/7 细评（五轴打分，只打过线的）');
       const t = await scorePending({ radar: 'topic', limit });
       const g = await scorePending({ radar: 'game', limit });
-      log('6/6 日报');
+      log('7/7 日报');
       const d = await buildDigest();
-      recordRun('run', started, { collect: c, cluster: cl, prescreen: { topic: pt, game: pg }, topic: t, game: g, digest: { topicCount: d.topicCount, gameCount: d.gameCount }, llm: stats });
+      recordRun('run', started, { collect: c, cluster: cl, translate: tr, prescreen: { topic: pt, game: pg }, topic: t, game: g, digest: { topicCount: d.topicCount, gameCount: d.gameCount }, llm: stats });
       log(`完成。选题 ${d.topicCount} 条，作品 ${d.gameCount} 条。`);
       return;
     }

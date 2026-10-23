@@ -174,12 +174,16 @@ export function board(radar: Radar, opts: { days?: number; limit?: number; onlyP
   const rows = q<Omit<BoardEntry, 'games' | 'axes'> & { axes_json: string; games_json: string | null }>(
     `SELECT i.id AS item_id, sc.radar, sc.total, sc.verdict, sc.angle, sc.against,
             sc.axes_json, sc.games_json, sc.scored_at,
-            i.title, i.url, i.summary, i.image, i.published_at, i.event_id, i.heat_json,
+            COALESCE(i.title_zh, i.title) AS title, i.url,
+            COALESCE(i.summary_zh, i.summary) AS summary,
+            i.image, i.published_at, i.event_id, i.heat_json,
             s.name AS source_name, s.tier, s.role
      FROM scores sc
      JOIN items i ON i.id = sc.item_id
      JOIN sources s ON s.id = i.source_id
+     LEFT JOIN prescreen ps ON ps.item_id = i.id AND ps.radar = sc.radar
      WHERE sc.radar = ? AND COALESCE(i.published_at, i.fetched_at) >= ?
+       AND COALESCE(ps.related, '') <> 'off'
      ORDER BY sc.total DESC
      LIMIT 400`,
     radar,

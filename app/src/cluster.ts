@@ -124,7 +124,7 @@ export function computeHeat(): HotEvent[] {
     ts: string;
     srcname: string;
   }>(
-    `SELECT e.id AS event_id, e.title, e.summary, e.first_at, e.last_at,
+    `SELECT e.id AS event_id, COALESCE(e.title_zh, e.title) AS title, e.summary, e.first_at, e.last_at,
             i.source_id AS src, s.tier AS tier,
             COALESCE(i.published_at, i.fetched_at) AS ts,
             s.name AS srcname
@@ -133,6 +133,10 @@ export function computeHeat(): HotEvent[] {
      JOIN sources s ON s.id = i.source_id
      WHERE e.last_at >= ?
        AND s.role IN ('media','community','overseas','internal')
+       AND NOT EXISTS (
+         SELECT 1 FROM items x JOIN prescreen px ON px.item_id = x.id AND px.radar = 'topic'
+         WHERE x.event_id = e.id AND px.related = 'off'
+       )
      ORDER BY ts`,
     new Date(Date.now() - 7 * 86_400_000).toISOString()
   );

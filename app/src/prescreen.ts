@@ -6,6 +6,9 @@ import { exec, log, nowIso, q } from './db.ts';
 import type { Radar } from './types.ts';
 
 const BATCH = 25;
+
+/** 相关性分类：off 的内容不进热点榜（地震、案件这类硬社会新闻） */
+const RELATED = { KEEP: new Set(['game', 'acg', 'tech', 'society', 'off']) };
 const PROMPT_DIR = join(APP_ROOT, 'src', 'prompts');
 
 const PROMPT_FILE: Record<Radar, string> = {
@@ -27,7 +30,7 @@ interface Row {
 }
 
 interface BatchResp {
-  scores?: Array<{ i: number; s: number; why?: string }>;
+  scores?: Array<{ i: number; s: number; why?: string; r?: string }>;
 }
 
 /**
@@ -52,7 +55,7 @@ export async function prescreenQueue(
      JOIN sources s ON s.id = i.source_id
      LEFT JOIN prescreen p ON p.item_id = i.id AND p.radar = ?
      LEFT JOIN scores sc ON sc.item_id = i.id AND sc.radar = ?
-     WHERE p.id IS NULL AND sc.id IS NULL AND i.is_dup = 0
+     WHERE (p.id IS NULL OR p.related IS NULL) AND i.is_dup = 0
        AND COALESCE(i.published_at, i.fetched_at) >= ?
      ORDER BY COALESCE(i.published_at, i.fetched_at) DESC
      LIMIT ?`,
@@ -97,15 +100,17 @@ export async function prescreenQueue(
         const total = Math.max(0, Math.min(100, Math.round(Number(s.s))));
         if (!Number.isFinite(total)) continue;
         exec(
-          `INSERT INTO prescreen (item_id, radar, total, why, model, created_at)
-           VALUES (?,?,?,?,?,?)
-           ON CONFLICT(item_id, radar) DO UPDATE SET total=excluded.total, why=excluded.why, created_at=excluded.created_at`,
+          `INSERT INTO prescreen (item_id, radar, total, why, model, created_at, related)
+           VALUES (?,?,?,?,?,?,?)
+           ON CONFLICT(item_id, radar) DO UPDATE SET total=excluded.total, why=excluded.why,
+             created_at=excluded.created_at, related=excluded.related`,
           batch[idx].id,
           radar,
           total,
           String(s.why ?? '').slice(0, 60),
           'prescreen',
-          nowIso()
+          nowIso(),
+          RELATED.KEEP.has(String(s.r ?? '')) ? String(s.r) : 'game'
         );
         screened++;
       }
