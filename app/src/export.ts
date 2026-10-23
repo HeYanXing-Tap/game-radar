@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { APP_ROOT } from './config.ts';
 import { board } from './pipeline.ts';
@@ -10,6 +10,18 @@ import { exec, q } from './db.ts';
 import type { Radar } from './types.ts';
 
 const OUT = join(APP_ROOT, 'public', 'data');
+
+// 每次都换一个版本号，网页上 app.js/style.css 带 ?v=BUILD，
+// 这样浏览器不会拿着上一版脚本去读新版数据（用户看到的「页面没变」就是这个问题）。
+function stampAssets(): void {
+  const build = String(Date.now());
+  const file = join(APP_ROOT, 'public', 'index.html');
+  const html = readFileSync(file, 'utf8');
+  const next = html
+    .replace(/href="style\.css(\?v=\d+)?"/, `href="style.css?v=${build}"`)
+    .replace(/src="app\.js(\?v=\d+)?"/, `src="app.js?v=${build}"`);
+  if (next !== html) writeFileSync(file, next);
+}
 
 function write(name: string, data: unknown): void {
   writeFileSync(join(OUT, name), JSON.stringify(data));
@@ -46,6 +58,8 @@ export function exportStatic(): Record<string, number> {
   const digests = listDigests(60);
   write('digests.json', digests);
   counts.digests = digests.length;
+
+  stampAssets();
 
   if (digests.length) {
     const latest = digests[0];

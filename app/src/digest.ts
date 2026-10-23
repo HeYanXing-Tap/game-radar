@@ -44,7 +44,7 @@ export async function buildDigest(dateStr?: string): Promise<Digest> {
   if (hasLlm() && (topic.length || game.length)) {
     try {
       intro = await chat(
-        `今天是 ${date}。下面是今天游戏资讯雷达筛出的选题候选和作品候选，请写一段 80 字以内的导读，口吻像游戏媒体编辑在早会上说话，点出今天最值得注意的一两件事，不要罗列，不要用「综上所述」。\n\n选题：${topic.slice(0, 5).map((t) => t.title).join('；')}\n作品：${game.slice(0, 5).map((t) => t.title).join('；')}`,
+        `今天是 ${date}。下面是今天游戏资讯雷达筛出的选题候选和重点游戏候选，请写一段 80 字以内的导读，口吻像游戏媒体编辑在早会上说话，点出今天最值得注意的一两件事，不要罗列，不要用「综上所述」。\n\n选题：${topic.slice(0, 5).map((t) => t.title).join('；')}\n重点游戏：${game.slice(0, 5).map((t) => t.title).join('；')}`,
         { system: '你是 TapTap 游戏频道的资深编辑，说话直接、有判断、不用套话。', temperature: 0.7, maxTokens: 300 }
       );
       intro = intro.trim();
@@ -82,7 +82,7 @@ export async function buildDigest(dateStr?: string): Promise<Digest> {
 
   L.push(`---`);
   L.push('');
-  L.push(`## 二、作品雷达（${game.length} 条过硬门槛）`);
+  L.push(`## 二、重点游戏雷达（${game.length} 条过硬门槛）`);
   L.push('');
   if (game.length === 0) {
     L.push('_没有值得跟的作品信号。_');
@@ -122,7 +122,7 @@ export async function buildDigest(dateStr?: string): Promise<Digest> {
     nowIso()
   );
 
-  log(`日报已生成：${dateKey}，选题 ${topic.length} 条，作品 ${game.length} 条`);
+  log(`日报已生成：${dateKey}，选题 ${topic.length} 条，重点游戏 ${game.length} 条`);
   return { date: dateKey, markdown, topicCount: topic.length, gameCount: game.length };
 }
 

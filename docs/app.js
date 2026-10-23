@@ -31,7 +31,7 @@ function relTime(iso) {
 const state = { view: 'topic', days: 3, all: false, cache: new Map(), static: false };
 
 async function api(path) {
-  const r = await fetch(path);
+  const r = await fetch(path, { cache: 'no-store' });
   if (!r.ok) throw new Error(`${r.status} ${path}`);
   return r.json();
 }
@@ -150,7 +150,7 @@ async function renderBoard(radar) {
   const head =
     radar === 'topic'
       ? `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按选题价值排序 · 外溢能力权重最高<br /><span style="color:var(--mute)">这一栏回答的是：今天有什么值得写成稿子／视频</span></div>`
-      : `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按引进价值排序 · 品质与商业可行性权重最高<br /><span style="color:var(--mute)">这一栏回答的是：今天有什么作品值得谈代理／上架／合作</span></div>`;
+      : `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按引进价值排序 · 品质与商业可行性权重最高<br /><span style="color:var(--mute)">这一栏回答的是：今天有什么游戏值得谈代理／上架／合作</span></div>`;
   el.innerHTML = head + list.map((e) => card(e, e.pass !== false)).join('');
 }
 
