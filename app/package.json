@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "description": "游戏资讯雷达 —— 选题雷达 + 作品雷达，面向游戏编辑与引进发行",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning src/cli.ts serve",
     "run": "node --disable-warning=ExperimentalWarning src/cli.ts run",
@@ -16,6 +18,7 @@
     "status": "node --disable-warning=ExperimentalWarning src/cli.ts status",
     "hot": "node --disable-warning=ExperimentalWarning src/cli.ts hot",
     "probe": "node --disable-warning=ExperimentalWarning src/cli.ts probe",
-    "test": "node --disable-warning=ExperimentalWarning scripts/selftest.mjs"
+    "test": "node --disable-warning=ExperimentalWarning scripts/selftest.mjs",
+    "sync": "git -C .. pull -q && rm -f data/radar.db-wal data/radar.db-shm && echo '已同步仓库并清理 WAL'"
   }
 }

@@ -139,6 +139,20 @@ crontab -e
 
 ---
 
+## 跑在哪：本地 / GitHub Actions
+
+两种都验证通过了。
+
+**本地**（默认）：
+```bash
+cd app && npm run run && npm start     # 127.0.0.1:7317
+```
+
+**GitHub Actions**（本机不常开时用这个）：
+仓库 `.github/workflows/daily.yml` 每天 08:00（北京时间）自动跑一遍完整流程，把数据库和导出的静态数据**提交回仓库**，`docs/` 就是可以直接托管的静态站。手动跑一次：`gh workflow run daily.yml`。
+
+> ⚠️ **本地和云端共用同一个 `app/data/radar.db`**，所以 pull 之后必须先清掉 `-wal` / `-shm`，否则「新库 + 旧 WAL」会让 SQLite 报 `database disk image is malformed`（我踩过一次）。用 `npm run sync` 代替裸 `git pull`。
+
 ## 信源现状
 
 27 个信源，覆盖：

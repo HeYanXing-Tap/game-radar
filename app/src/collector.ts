@@ -45,9 +45,11 @@ async function enrichSteam(items: RawItem[]): Promise<void> {
       it.image = (d.header_image as string) ?? it.image;
       if (release && !/coming soon|即将推出/i.test(release)) {
         const cn = /(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/.exec(release);
-        it.publishedAt = cn
+        const when = cn
           ? new Date(Number(cn[1]), Number(cn[2]) - 1, Number(cn[3])).toISOString()
           : parseDate(release);
+        // 未发售作品的发售日不能当发布时间：否则 2027 年才上的游戏会排到「最新」第一
+        if (when && new Date(when).getTime() <= Date.now()) it.publishedAt = when;
       }
       const recs = (d.recommendations as { total?: number } | undefined)?.total;
       if (typeof recs === 'number') it.heat = { ...(it.heat ?? {}), reviews: recs };
