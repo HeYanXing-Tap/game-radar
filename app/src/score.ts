@@ -85,7 +85,7 @@ export async function scoreItem(input: ScoreInput, radar: Radar): Promise<ItemSc
   const user = `请按你的评分标准给下面这条内容打分。\n\n---\n${itemBlock(input)}\n---`;
 
   const model = cfg.model;
-  const first = await chatJson<RawParsed>(user, { system, model, temperature: 0.2 });
+  const first = await chatJson<RawParsed>(user, { system, model, temperature: 0.2, maxTokens: 1600 });
   if (!first || !Array.isArray(first.axes)) return null;
 
   let axes: AxisScore[] = first.axes
@@ -98,7 +98,7 @@ export async function scoreItem(input: ScoreInput, radar: Radar): Promise<ItemSc
   // 这里不做无脑两遍，只在「可能改变结论」的区间复检，省 token。
   const threshold = THRESHOLDS[radar][(input.tier >= 1 && input.tier <= 3 ? input.tier : 1) as 1 | 2 | 3];
   if (Math.abs(total - threshold) <= 8) {
-    const second = await chatJson<RawParsed>(user, { system, model, temperature: 0.6 });
+    const second = await chatJson<RawParsed>(user, { system, model, temperature: 0.6, maxTokens: 1600 });
     if (second && Array.isArray(second.axes)) {
       const axes2: AxisScore[] = second.axes
         .filter((a) => a && typeof a.key === 'string')

@@ -56,7 +56,7 @@ async function main(): Promise<void> {
     case 'score': {
       const started = nowIso();
       const radar = (flag('radar') ?? 'both') as Radar | 'both';
-      const limit = Number(flag('limit') ?? 60);
+      const limit = Number(flag('limit') ?? 200);
       const days = Number(flag('days') ?? 3);
       const out: Record<string, unknown> = {};
       const ignorePrescreen = has('all');
@@ -84,7 +84,7 @@ async function main(): Promise<void> {
 
     case 'run': {
       const started = nowIso();
-      const limit = Number(flag('limit') ?? 60);
+      const limit = Number(flag('limit') ?? 200);
       log('1/6 同步信源');
       syncSources();
       log('2/6 抓取');

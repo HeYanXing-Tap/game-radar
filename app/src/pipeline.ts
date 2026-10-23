@@ -1,7 +1,7 @@
 import { exec, log, nowIso, q } from './db.ts';
 import { prefilter, scoreItem, thresholdFor } from './score.ts';
-import { stats } from './llm.ts';
-import { hasLlm } from './config.ts';
+import { BudgetExceeded, stats } from './llm.ts';
+import { hasLlm, llmConfig } from './config.ts';
 import { PRESCREEN_CUTOFF } from './prescreen.ts';
 import type { Radar } from './types.ts';
 
@@ -64,11 +64,18 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
   let failed = 0;
   let skipped = 0;
 
-  for (const row of rows) {
+  // 逐条串行太慢：一条带推理的模型调用 20–60 秒，60 条要半小时以上。
+  // 这里开工位并行，真正的并发上限由 llm.ts 的闸门控制（cfg.concurrency），
+  // 工位开多一点只是为了让排队期不留空档。
+  let cursor = 0;
+  let stop = false;
+  const workers = Math.max(1, Math.min(8, llmConfig().concurrency * 2));
+
+  const one = async (row: PendingItem & { sid: number }): Promise<void> => {
     const pf = prefilter(row.title, row.summary);
     if (!pf.pass) {
       skipped++;
-      continue;
+      return;
     }
     try {
       const s = await scoreItem(
@@ -86,7 +93,7 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
       );
       if (!s) {
         failed++;
-        continue;
+        return;
       }
       exec(
         `INSERT INTO scores (item_id, radar, total, axes_json, verdict, angle, games_json, against, model, scored_at)
@@ -110,10 +117,23 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
       log(`${mark} [${opts.radar}] ${s.total}  ${row.title.slice(0, 44)}`);
       scored++;
     } catch (e) {
+      if (e instanceof BudgetExceeded) {
+        stop = true;
+        return;
+      }
       failed++;
       log(`✗ 打分失败：${e instanceof Error ? e.message : String(e)}`);
     }
-  }
+  };
+
+  await Promise.all(
+    Array.from({ length: workers }, async () => {
+      while (!stop && cursor < rows.length) {
+        const row = rows[cursor++];
+        await one(row);
+      }
+    })
+  );
 
   log(
     `打分完成 [${opts.radar}]：成功 ${scored}，失败 ${failed}，规则预筛跳过 ${skipped}，模型调用 ${stats.calls} 次，token ${stats.promptTokens}+${stats.completionTokens}`

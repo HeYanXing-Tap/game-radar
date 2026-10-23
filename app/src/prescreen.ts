@@ -1,8 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { APP_ROOT, hasLlm } from './config.ts';
+import { APP_ROOT, hasLlm, llmConfig } from './config.ts';
 import { chatJson } from './llm.ts';
-import { cfg } from './config.ts';
 import { exec, log, nowIso, q } from './db.ts';
 import type { Radar } from './types.ts';
 
@@ -85,7 +84,7 @@ export async function prescreenQueue(
         temperature: 0.1,
         maxTokens: 2000,
         // 粗排一次要跑几十批，用便宜模型能省一个数量级
-        model: cfg.cheapModel || undefined,
+        model: llmConfig().cheapModel || undefined,
       });
       calls++;
       if (!resp?.scores?.length) {
