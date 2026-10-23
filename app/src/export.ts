@@ -51,6 +51,7 @@ export function exportStatic(): Record<string, number> {
     items: q<{ n: number }>('SELECT COUNT(*) AS n FROM items')[0]?.n ?? 0,
     events: q<{ n: number }>('SELECT COUNT(*) AS n FROM events')[0]?.n ?? 0,
     sources: q<{ n: number }>('SELECT COUNT(*) AS n FROM sources WHERE enabled = 1')[0]?.n ?? 0,
+    scored: q<{ n: number }>('SELECT COUNT(*) AS n FROM scores')[0]?.n ?? 0,
     latest_item:
       q<{ ts: string }>('SELECT COALESCE(published_at, fetched_at) AS ts FROM items ORDER BY COALESCE(published_at, fetched_at) DESC LIMIT 1')[0]
         ?.ts ?? null,

@@ -130,10 +130,19 @@ async function renderBoard(radar) {
     state.cache.set(key, data);
   }
   if (!data.entries.length) {
-    el.innerHTML = `<div class="empty">
-      ${state.all ? '还没有任何打分结果。' : '没有过门槛的条目。'}<br /><br />
-      先跑一次 <code>npm run run</code>，或者勾上右上角的「显示未过门槛」降低标准看全量。
-    </div>`;
+    const st = await getStats().catch(() => null);
+    const noModel = st && typeof st.scored === 'number' && st.scored === 0;
+    el.innerHTML = noModel
+      ? `<div class="empty">
+          <strong>打分层还没跑起来。</strong><br /><br />
+          抓取是正常的（已经存了 ${st.items} 条资讯、归并成 ${st.events} 个事件），但还没有任何一条被模型打过分。<br /><br />
+          原因通常只有一个：<b>没配模型 key</b>。在 <code>app/.env</code> 里填 <code>LLM_API_KEY</code>，然后跑一次
+          <code>npm run run</code>，这一栏就会有内容了。
+        </div>`
+      : `<div class="empty">
+          ${state.all ? '还没有任何打分结果。' : '没有过门槛的条目。'}<br /><br />
+          先跑一次 <code>npm run run</code>，或者勾上右上角的「显示未过门槛」降低标准看全量。
+        </div>`;
     return;
   }
   const passCount = data.entries.filter((e) => e.total >= (radar === 'game' ? 70 : 63)).length;
