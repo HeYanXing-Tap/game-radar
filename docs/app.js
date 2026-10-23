@@ -51,7 +51,8 @@ async function detectMode() {
   }
 }
 
-const DATA = (name) => `/data/${name}.json`;
+// 相对路径：本地服务在根目录、GitHub Pages 在 /game-radar/ 子路径，两种都能用
+const DATA = (name) => `data/${name}.json`;
 
 async function getStats() {
   return state.static ? api(DATA('stats')) : api('/api/stats');
