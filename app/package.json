@@ -20,6 +20,7 @@
     "probe": "node --disable-warning=ExperimentalWarning src/cli.ts probe",
     "test": "node --disable-warning=ExperimentalWarning scripts/selftest.mjs",
     "sync": "git -C .. pull -q && rm -f data/radar.db-wal data/radar.db-shm && echo '已同步仓库并清理 WAL'",
-    "publish": "bash scripts/publish.sh"
+    "publish": "bash scripts/publish.sh",
+    "setup": "node scripts/setup-env.mjs"
   }
 }
