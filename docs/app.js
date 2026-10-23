@@ -87,7 +87,10 @@ async function getSources() {
 async function loadStats() {
   try {
     const s = await getStats();
-    $('#statline').textContent = `${s.items} 条内容 · ${s.events} 个事件 · ${s.sources} 个信源`;
+    const when = s.generated_at
+      ? new Date(s.generated_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+      : '';
+    $('#statline').textContent = `${s.items} 条内容 · ${s.events} 个事件 · ${s.sources} 个信源${when ? ` · 更新于 ${when}` : ''}`;
   } catch {}
 }
 
