@@ -129,7 +129,7 @@ async function renderBoard(radar) {
     data = await getBoard(radar, state.days, state.all);
     state.cache.set(key, data);
   }
-  if (!data.entries.length) {
+  if (!data.entries.filter((e) => state.all || e.pass !== false).length) {
     const st = await getStats().catch(() => null);
     const noModel = st && typeof st.scored === 'number' && st.scored === 0;
     el.innerHTML = noModel
@@ -145,12 +145,13 @@ async function renderBoard(radar) {
         </div>`;
     return;
   }
-  const passCount = data.entries.filter((e) => e.total >= (radar === 'game' ? 70 : 63)).length;
+  const list = state.all ? data.entries : data.entries.filter((e) => e.pass !== false);
+  const passCount = list.length;
   const head =
     radar === 'topic'
-      ? `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${data.entries.length} 条候选 · 按选题价值排序 · 外溢能力权重最高</div>`
-      : `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${data.entries.length} 条候选 · 按引进价值排序 · 品质与商业可行性权重最高</div>`;
-  el.innerHTML = head + data.entries.map((e, i) => card(e, i < passCount || e.total >= 60)).join('');
+      ? `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按选题价值排序 · 外溢能力权重最高</div>`
+      : `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按引进价值排序 · 品质与商业可行性权重最高</div>`;
+  el.innerHTML = head + list.map((e) => card(e, e.pass !== false)).join('');
 }
 
 async function renderHot() {

@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { APP_ROOT } from './config.ts';
 import { board } from './pipeline.ts';
+import { thresholdFor } from './score.ts';
 import { computeHeat } from './cluster.ts';
 import { getDigest, listDigests } from './digest.ts';
 import { allSources } from './sources.ts';
@@ -25,9 +26,16 @@ export function exportStatic(): Record<string, number> {
 
   for (const days of [1, 3, 7]) {
     for (const radar of ['topic', 'game'] as Radar[]) {
-      const entries = board(radar, { days, limit: 60 });
+      // 导出时把「没过门槛」的也带上，并算好 pass，让网页自己决定收不收。
+      // 否则作品队列常常只有两三条，看着像坏了。
+      const entries = board(radar, { days, limit: 80, onlyPassing: false })
+        .filter((e) => e.total >= 55)
+        .map((e) => ({
+        ...e,
+        pass: e.total >= thresholdFor(radar, e.tier),
+      }));
       write(`${radar}-${days}.json`, { radar, days, entries });
-      if (days === 3) counts[radar] = entries.length;
+      if (days === 3) counts[radar] = entries.filter((e) => e.pass).length;
     }
   }
 
