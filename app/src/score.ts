@@ -82,6 +82,9 @@ function recompute(radar: Radar, axes: AxisScore[]): number {
   return Math.round((sum / wsum) * 20);
 }
 
+/** 总分到这条线以上，也要独立再打一遍。 */
+const HIGH_SCORE_RECHECK = 82;
+
 export async function scoreItem(input: ScoreInput, radar: Radar): Promise<ItemScore | null> {
   const cfg = llmConfig();
   const system = prompt(radar === 'topic' ? 'radar-topic.md' : 'radar-game.md');
@@ -105,7 +108,9 @@ export async function scoreItem(input: ScoreInput, radar: Radar): Promise<ItemSc
   // AIHOT 的双打分精神：分数贴着门槛时再打一次，取均值降低随机性。
   // 这里不做无脑两遍，只在「可能改变结论」的区间复检，省 token。
   const threshold = THRESHOLDS[radar][(input.tier >= 1 && input.tier <= 3 ? input.tier : 1) as 1 | 2 | 3];
-  if (Math.abs(total - threshold) <= 8) {
+  // 复检两个区间：①贴着门槛（结论会翻）②总分很高（编辑当天真会动手）。
+  // 高分区不打第二遍是个漏洞——低分误判只是沉底没人看，高分误判会让人白跑一趟。
+  if (Math.abs(total - threshold) <= 8 || total >= HIGH_SCORE_RECHECK) {
     const second = await chatJson<RawParsed>(user, { system, model, temperature: 0.6, maxTokens: 1600 });
     if (second && Array.isArray(second.axes)) {
       const axes2: AxisScore[] = second.axes
