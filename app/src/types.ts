@@ -73,6 +73,8 @@ export interface ItemScore {
   games?: string[];
   /** 反方理由，防止一边倒 */
   against?: string;
+  /** 打分时喂给模型的 Steam 外部事实（发售日/上线天数/评价数），留档便于复现 */
+  facts?: string;
   model: string;
   scoredAt: string;
 }

@@ -3,6 +3,7 @@ import { prefilter, scoreItem, thresholdFor } from './score.ts';
 import { BudgetExceeded, stats } from './llm.ts';
 import { hasLlm, llmConfig } from './config.ts';
 import { PRESCREEN_CUTOFF } from './prescreen.ts';
+import { factsLine, lookupGame, mentionedInTitle } from './steam.ts';
 import type { Radar } from './types.ts';
 
 interface PendingItem {
@@ -10,6 +11,7 @@ interface PendingItem {
   title: string;
   summary: string | null;
   url: string;
+  game_name?: string | null;
   published_at: string | null;
   fetched_at: string;
   heat_json: string | null;
@@ -24,6 +26,8 @@ export interface ScoreRunOpts {
   days?: number;
   /** 跳过预筛门槛，全部细评（贵，调试用） */
   ignorePrescreen?: boolean;
+  /** 重打：先清掉这批条目在该雷达下的旧分（改规则后重算用） */
+  redo?: boolean;
   /** 只打高于即时门槛的（用于补跑） */
 }
 
@@ -38,11 +42,28 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
   }
   const limit = opts.limit ?? 60;
   const days = opts.days ?? 3;
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+
+  if (opts.redo) {
+    const n = q<{ n: number }>(
+      `SELECT COUNT(*) AS n FROM scores WHERE radar = ?
+         AND item_id IN (SELECT id FROM items WHERE COALESCE(published_at, fetched_at) >= ?)`,
+      opts.radar,
+      since
+    )[0]?.n ?? 0;
+    exec(
+      `DELETE FROM scores WHERE radar = ?
+         AND item_id IN (SELECT id FROM items WHERE COALESCE(published_at, fetched_at) >= ?)`,
+      opts.radar,
+      since
+    );
+    log(`[${opts.radar}] 重打：已清掉 ${n} 条旧分`);
+  }
 
   // 默认只细评预筛过线的；没有预筛记录的老数据也放进来（首次接入时不会漏）
   const rows = q<PendingItem & { sid: number }>(
     `SELECT i.id AS sid, i.title, i.summary, i.url, i.published_at, i.fetched_at, i.heat_json,
-            s.name AS source_name, s.tier, s.role
+            s.name AS source_name, s.tier, s.role, p.game_name AS game_name
      FROM items i
      JOIN sources s ON s.id = i.source_id
      LEFT JOIN scores sc ON sc.item_id = i.id AND sc.radar = ?
@@ -54,7 +75,7 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
      LIMIT ?`,
     opts.radar,
     opts.radar,
-    new Date(Date.now() - days * 86_400_000).toISOString(),
+    since,
     opts.ignorePrescreen ? 1 : 0,
     PRESCREEN_CUTOFF[opts.radar],
     limit
@@ -78,8 +99,19 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
       return;
     }
     try {
+      // 重点游戏雷达：先查 Steam 事实（发售日/上线天数/评价数）再打分。
+      // 模型看不到时间，不喂这个它就分不清「首曝」和「两年前的游戏上了个新平台」。
+      let facts: string | null = null;
+      if (opts.radar === 'game' && row.game_name && mentionedInTitle(row.game_name, row.title)) {
+        try {
+          facts = factsLine(await lookupGame(row.game_name));
+        } catch (e) {
+          log(`[steam] ${row.game_name} 查询失败：${e instanceof Error ? e.message : String(e)}`);
+        }
+      }
       const s = await scoreItem(
         {
+          facts,
           title: row.title,
           summary: row.summary,
           url: row.url,
@@ -96,12 +128,12 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
         return;
       }
       exec(
-        `INSERT INTO scores (item_id, radar, total, axes_json, verdict, angle, games_json, against, model, scored_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?)
+        `INSERT INTO scores (item_id, radar, total, axes_json, verdict, angle, games_json, against, model, scored_at, facts)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)
          ON CONFLICT(item_id, radar) DO UPDATE SET
            total=excluded.total, axes_json=excluded.axes_json, verdict=excluded.verdict,
            angle=excluded.angle, games_json=excluded.games_json, against=excluded.against,
-           model=excluded.model, scored_at=excluded.scored_at`,
+           model=excluded.model, scored_at=excluded.scored_at, facts=excluded.facts`,
         row.sid,
         opts.radar,
         s.total,
@@ -111,7 +143,8 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
         s.games ? JSON.stringify(s.games) : null,
         s.against ?? null,
         s.model,
-        s.scoredAt
+        s.scoredAt,
+        s.facts ?? null
       );
       const mark = s.total >= thresholdFor(opts.radar, row.tier) ? '★' : ' ';
       log(`${mark} [${opts.radar}] ${s.total}  ${row.title.slice(0, 44)}`);

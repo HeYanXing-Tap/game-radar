@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { fetchSource } from './collector.ts';
 import { cluster, computeHeat } from './cluster.ts';
 import { scorePending, board, recordRun } from './pipeline.ts';
+import { resolveForPending } from './steam.ts';
 import { translatePending } from './translate.ts';
 import { prescreenQueue } from './prescreen.ts';
 import { buildDigest } from './digest.ts';
@@ -54,6 +55,13 @@ async function main(): Promise<void> {
       return;
     }
 
+    case 'resolve': {
+      // 把预筛抽出来的作品名拿去 Steam 查一遍，结果缓存在 games 表里。
+      // 打分时会自动读缓存，所以这一步只是预热 + 让「首发多少天」可查。
+      const n = await resolveForPending('game', Number(flag('limit') ?? 200));
+      log(`[steam] 已核对 ${n} 个作品`);
+      return;
+    }
     case 'score': {
       const started = nowIso();
       const radar = (flag('radar') ?? 'both') as Radar | 'both';
@@ -61,10 +69,11 @@ async function main(): Promise<void> {
       const days = Number(flag('days') ?? 3);
       const out: Record<string, unknown> = {};
       const ignorePrescreen = has('all');
+      const redo = has('redo');
       if (radar === 'topic' || radar === 'both')
-        out.topic = await scorePending({ radar: 'topic', limit, days, ignorePrescreen });
+        out.topic = await scorePending({ radar: 'topic', limit, days, ignorePrescreen, redo });
       if (radar === 'game' || radar === 'both')
-        out.game = await scorePending({ radar: 'game', limit, days, ignorePrescreen });
+        out.game = await scorePending({ radar: 'game', limit, days, ignorePrescreen, redo });
       recordRun('score', started, { ...out, llm: stats });
       return;
     }

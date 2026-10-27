@@ -30,7 +30,7 @@ interface Row {
 }
 
 interface BatchResp {
-  scores?: Array<{ i: number; s: number; why?: string; r?: string }>;
+  scores?: Array<{ i: number; s: number; why?: string; r?: string; g?: string }>;
 }
 
 /**
@@ -55,10 +55,11 @@ export async function prescreenQueue(
      JOIN sources s ON s.id = i.source_id
      LEFT JOIN prescreen p ON p.item_id = i.id AND p.radar = ?
      LEFT JOIN scores sc ON sc.item_id = i.id AND sc.radar = ?
-     WHERE (p.id IS NULL OR p.related IS NULL) AND i.is_dup = 0
+     WHERE (p.id IS NULL OR p.related IS NULL OR (? = 'game' AND p.game_name IS NULL)) AND i.is_dup = 0
        AND COALESCE(i.published_at, i.fetched_at) >= ?
      ORDER BY COALESCE(i.published_at, i.fetched_at) DESC
      LIMIT ?`,
+    radar,
     radar,
     radar,
     new Date(Date.now() - days * 86_400_000).toISOString(),
@@ -99,18 +100,21 @@ export async function prescreenQueue(
         if (!Number.isInteger(idx) || idx < 0 || idx >= batch.length) continue;
         const total = Math.max(0, Math.min(100, Math.round(Number(s.s))));
         if (!Number.isFinite(total)) continue;
+        const g = s.g ? String(s.g).replace(/[《》]/g, '').trim().slice(0, 80) : null;
         exec(
-          `INSERT INTO prescreen (item_id, radar, total, why, model, created_at, related)
-           VALUES (?,?,?,?,?,?,?)
+          `INSERT INTO prescreen (item_id, radar, total, why, model, created_at, related, game_name)
+           VALUES (?,?,?,?,?,?,?,?)
            ON CONFLICT(item_id, radar) DO UPDATE SET total=excluded.total, why=excluded.why,
-             created_at=excluded.created_at, related=excluded.related`,
+             created_at=excluded.created_at, related=excluded.related,
+             game_name=COALESCE(excluded.game_name, prescreen.game_name)`,
           batch[idx].id,
           radar,
           total,
           String(s.why ?? '').slice(0, 60),
           'prescreen',
           nowIso(),
-          RELATED.KEEP.has(String(s.r ?? '')) ? String(s.r) : 'game'
+          RELATED.KEEP.has(String(s.r ?? '')) ? String(s.r) : 'game',
+          g
         );
         screened++;
       }

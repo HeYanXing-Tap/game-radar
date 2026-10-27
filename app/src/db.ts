@@ -144,6 +144,8 @@ ensureColumn('items', 'summary_zh', 'TEXT');
 ensureColumn('events', 'title_zh', 'TEXT');
 // 内容相关性：game/acg/tech/society/off，off 的不进热点榜
 ensureColumn('prescreen', 'related', 'TEXT');
+ensureColumn('prescreen', 'game_name', 'TEXT');
+ensureColumn('scores', 'facts', 'TEXT');
 
 /** ---------- 小工具 ---------- */
 

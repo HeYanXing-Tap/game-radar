@@ -37,6 +37,8 @@ export interface ScoreInput {
   heat?: Record<string, number> | null;
   /** 补充的正文（摘要太短时抓的） */
   body?: string | null;
+  /** Steam 外部事实（重点游戏雷达用）：发售日、已上线天数、评价数 */
+  facts?: string | null;
 }
 
 function itemBlock(input: ScoreInput): string {
@@ -49,6 +51,7 @@ function itemBlock(input: ScoreInput): string {
   if (input.heat && Object.keys(input.heat).length) {
     parts.push(`热度字段：${JSON.stringify(input.heat)}`);
   }
+  if (input.facts) parts.push(input.facts);
   parts.push(`标题：${input.title}`);
   const text = (input.body || input.summary || '').replace(/\s+/g, ' ').trim();
   if (text) parts.push(`正文/摘要：${text.slice(0, 1500)}`);
@@ -106,7 +109,21 @@ export async function scoreItem(input: ScoreInput, radar: Radar): Promise<ItemSc
       const total2 = recompute(radar, axes2);
       // 两次分歧大就取低值（保守，防止单次抬分把噪音送进精选）
       total = Math.abs(total - total2) > 12 ? Math.min(total, total2) : Math.round((total + total2) / 2);
-      if (total2 < total) axes = axes2;
+      // 保留「拆分与总分对得上」的那一轮，否则卡片上五个轴算出来不是这个总分
+      if (Math.abs(total2 - total) < Math.abs(recompute(radar, axes) - total)) axes = axes2;
+    }
+  }
+
+  // 时间窗硬闸：已上线超过一年、又不是进入新地区/新平台的事件，不该占重点游戏队列。
+  // 提示词里写了这条，但模型会偶尔越过去，所以在这里兜一道，保证「老游戏」压不到门槛以上。
+  if (radar === 'game' && input.facts) {
+    const m = /已上线\s*(\d+)\s*天/.exec(input.facts);
+    if (m && Number(m[1]) > 365) {
+      const before = total;
+      total = Math.min(total, 65);
+      if (total !== before) {
+        axes = [...axes];
+      }
     }
   }
 
@@ -118,6 +135,7 @@ export async function scoreItem(input: ScoreInput, radar: Radar): Promise<ItemSc
     angle: first.angle ? String(first.angle).slice(0, 300) : undefined,
     against: first.against ? String(first.against).slice(0, 300) : undefined,
     games: Array.isArray(first.games) ? first.games.filter(Boolean).map(String).slice(0, 6) : [],
+    facts: input.facts ?? undefined,
     model,
     scoredAt: new Date().toISOString(),
   };
