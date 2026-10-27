@@ -146,6 +146,8 @@ ensureColumn('events', 'title_zh', 'TEXT');
 ensureColumn('prescreen', 'related', 'TEXT');
 ensureColumn('prescreen', 'game_name', 'TEXT');
 ensureColumn('scores', 'facts', 'TEXT');
+ensureColumn('games', 'bili_json', 'TEXT');
+ensureColumn('games', 'bili_at', 'TEXT');
 
 /** ---------- 小工具 ---------- */
 

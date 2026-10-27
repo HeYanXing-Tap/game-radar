@@ -24,6 +24,9 @@
     "setup": "node scripts/setup-env.mjs",
     "translate": "node --disable-warning=ExperimentalWarning src/cli.ts translate",
     "models": "node --disable-warning=ExperimentalWarning scripts/list-models.mjs",
-    "doctor": "node --disable-warning=ExperimentalWarning scripts/doctor.mjs"
+    "doctor": "node --disable-warning=ExperimentalWarning scripts/doctor.mjs",
+    "discover": "node --disable-warning=ExperimentalWarning src/cli.ts discover",
+    "backfill": "node --disable-warning=ExperimentalWarning src/cli.ts backfill",
+    "resolve": "node --disable-warning=ExperimentalWarning src/cli.ts resolve"
   }
 }

@@ -88,7 +88,12 @@ export async function scoreItem(input: ScoreInput, radar: Radar): Promise<ItemSc
   const user = `请按你的评分标准给下面这条内容打分。\n\n---\n${itemBlock(input)}\n---`;
 
   const model = cfg.model;
-  const first = await chatJson<RawParsed>(user, { system, model, temperature: 0.2, maxTokens: 1600 });
+  let first = await chatJson<RawParsed>(user, { system, model, temperature: 0.2, maxTokens: 1600 });
+  // flash 档模型的推理有时候会把输出预算吃光，JSON 被截断。
+  // 这类失败只是「话没说完」，不是判断错误，给一次更大的预算重试比直接丢掉划算。
+  if (!first || !Array.isArray(first.axes)) {
+    first = await chatJson<RawParsed>(user, { system, model, temperature: 0.2, maxTokens: 3200 });
+  }
   if (!first || !Array.isArray(first.axes)) return null;
 
   let axes: AxisScore[] = first.axes

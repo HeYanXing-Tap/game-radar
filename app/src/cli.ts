@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { collect } from './collector.ts';
+import { backfillAppids, discoverSteam } from './discover.ts';
 import { syncSources, toSourceRow } from './sources.ts';
 import { readFileSync } from 'node:fs';
 import { fetchSource } from './collector.ts';
@@ -43,6 +44,32 @@ async function main(): Promise<void> {
         log('失败清单：');
         for (const e of r.errors) log(`  - ${e.id}: ${e.error}`);
       }
+      return;
+    }
+
+    case 'discover': {
+      const started = nowIso();
+      const r = await discoverSteam({
+        newCount: Number(flag('new') ?? 50),
+        comingCount: Number(flag('coming') ?? 30),
+        demoCount: Number(flag('demo') ?? 30),
+      });
+      recordRun('discover', started, r);
+      log(`Steam 发现完成：新发售 ${r.new} / 即将发售 ${r.coming} / 带Demo ${r.demo}，写入 ${r.inserted} 条`);
+      return;
+    }
+
+    case 'backfill': {
+      const started = nowIso();
+      const raw = flag('appids') ?? (flag('file') ? readFileSync(flag('file') as string, 'utf8') : '');
+      const ids = raw.split(/[\s,]+/).filter(Boolean);
+      if (!ids.length) {
+        log('用法：backfill --appids=5186030,3432980  或  backfill --file=/tmp/ids.txt');
+        return;
+      }
+      const r = await backfillAppids(ids);
+      recordRun('backfill', started, r);
+      log(`补录完成：写入 ${r.inserted} 条，跳过 ${r.skipped} 条（已存在或非游戏）`);
       return;
     }
 
@@ -101,23 +128,25 @@ async function main(): Promise<void> {
     case 'run': {
       const started = nowIso();
       const limit = Number(flag('limit') ?? 200);
-      log('1/6 同步信源');
+      log('1/8 同步信源');
       syncSources();
-      log('2/6 抓取');
+      log('2/8 抓取媒体与热榜');
       const c = await collect(has('force'));
-      log('3/6 聚簇');
+      log('3/8 Steam 发现（媒体不会写的小体量作品）');
+      const dc = await discoverSteam({ newCount: 40, comingCount: 25, demoCount: 25 });
+      log('4/8 聚簇');
       const cl = await cluster();
-      log('4/6 预筛（标题粗排，便宜）');
+      log('5/8 预筛（标题粗排，便宜）');
       const pt = await prescreenQueue('topic', { days: 2 });
       const pg = await prescreenQueue('game', { days: 2 });
-      log('5/7 翻译英文标题');
+      log('6/8 翻译英文标题');
       const tr = await translatePending({ limit: 300 });
-      log('6/7 细评（五轴打分，只打过线的）');
+      log('7/8 细评（五轴打分，只打过线的）');
       const t = await scorePending({ radar: 'topic', limit });
       const g = await scorePending({ radar: 'game', limit });
-      log('7/7 日报');
+      log('8/8 日报');
       const d = await buildDigest();
-      recordRun('run', started, { collect: c, cluster: cl, translate: tr, prescreen: { topic: pt, game: pg }, topic: t, game: g, digest: { topicCount: d.topicCount, gameCount: d.gameCount }, llm: stats });
+      recordRun('run', started, { collect: c, discover: dc, cluster: cl, translate: tr, prescreen: { topic: pt, game: pg }, topic: t, game: g, digest: { topicCount: d.topicCount, gameCount: d.gameCount }, llm: stats });
       log(`完成。选题 ${d.topicCount} 条，作品 ${d.gameCount} 条。`);
       return;
     }

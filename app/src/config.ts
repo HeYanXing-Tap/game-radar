@@ -65,7 +65,7 @@ export const PORT = Number(process.env.PORT || 7317);
 /** 入选门槛：一手源放宽。AIHOT 的核心机制之一，这里按雷达各存一套。 */
 export const THRESHOLDS = {
   topic: { 1: 72, 2: 66, 3: 60 },
-  game: { 1: 68, 2: 62, 3: 56 },
+  game: { 1: 72, 2: 68, 3: 64 },
 } as const;
 
 /** 抓取礼貌间隔（毫秒），同域名串行。 */

@@ -4,6 +4,7 @@ import { BudgetExceeded, stats } from './llm.ts';
 import { hasLlm, llmConfig } from './config.ts';
 import { PRESCREEN_CUTOFF } from './prescreen.ts';
 import { factsLine, lookupGame, mentionedInTitle } from './steam.ts';
+import { biliHeatFor, biliLine } from './heat.ts';
 import type { Radar } from './types.ts';
 
 interface PendingItem {
@@ -102,12 +103,24 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
       // 重点游戏雷达：先查 Steam 事实（发售日/上线天数/评价数）再打分。
       // 模型看不到时间，不喂这个它就分不清「首曝」和「两年前的游戏上了个新平台」。
       let facts: string | null = null;
-      if (opts.radar === 'game' && row.game_name && mentionedInTitle(row.game_name, row.title)) {
-        try {
-          facts = factsLine(await lookupGame(row.game_name));
-        } catch (e) {
-          log(`[steam] ${row.game_name} 查询失败：${e instanceof Error ? e.message : String(e)}`);
+      if (opts.radar === 'game' && row.game_name) {
+        const parts: string[] = [];
+        // Steam：这游戏上线多久了、有多少人在评（判断时间窗）
+        if (mentionedInTitle(row.game_name, row.title)) {
+          try {
+            parts.push(factsLine(await lookupGame(row.game_name)));
+          } catch (e) {
+            log(`[steam] ${row.game_name} 查询失败：${e instanceof Error ? e.message : String(e)}`);
+          }
         }
+        // B站：国内到底有没有人在看（判断是不是首曝窗口）
+        try {
+          const h = await biliHeatFor(row.game_name);
+          if (h && h.top.length) parts.push(biliLine(h));
+        } catch (e) {
+          log(`[bili] ${row.game_name} 查询失败：${e instanceof Error ? e.message : String(e)}`);
+        }
+        facts = parts.filter(Boolean).join('｜') || null;
       }
       const s = await scoreItem(
         {
