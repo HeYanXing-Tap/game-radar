@@ -89,6 +89,8 @@ export async function fetchSource(
         vids = null;
       }
       if (!vids) continue; // 单个关键词失败不影响整体
+      // B 站搜索有频率风控：连打会返回 -352。每个关键词之间喘一口。
+      await new Promise((r) => setTimeout(r, 700));
       let taken = 0;
       for (const v of vids) {
         if (taken >= perKeyword || picked.length >= maxItems) break;
