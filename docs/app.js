@@ -28,7 +28,7 @@ function relTime(iso) {
   return days < 30 ? `${days} 天前` : d.toLocaleDateString('zh-CN');
 }
 
-const state = { view: 'topic', days: 3, all: false, cache: new Map(), static: false };
+const state = { view: 'topic', days: 3, all: false, cache: new Map(), static: false, mustknow: null };
 
 async function api(path) {
   const r = await fetch(path, { cache: 'no-store' });
@@ -101,6 +101,7 @@ function card(e, passing) {
     .join('');
   const tierBadge = e.tier === 3 ? '<span class="tier3">一手</span>' : '';
   const heat = e.event_sources > 1 ? `· ${e.event_sources} 源在说` : '';
+  const also = (e.also ?? 1) > 1 ? `<span class="also">同事件另有 ${e.also - 1} 篇</span>` : '';
   return `
   <article class="card ${cls}" data-id="${e.item_id}">
     <div class="score"><b>${e.total}</b><span>SCORE</span></div>
@@ -109,7 +110,7 @@ function card(e, passing) {
       <div class="meta">
         <span class="src">${esc(e.source_name)} ${tierBadge}</span>
         <span>${e.published_at ? relTime(e.published_at) : e.rank ? `榜 #${e.rank}` : '时间未知'}</span>
-        <span>${esc(heat)}</span>
+        <span>${esc(heat)}</span>${also}
       </div>
       <div class="axes">${axes}</div>
       <p class="verdict">${esc(e.verdict)}</p>
@@ -121,6 +122,37 @@ function card(e, passing) {
       </div>
     </div>
   </article>`;
+}
+
+/**
+ * 「今日必知」= 热度榜里 3 家以上同时在说的头部事件。
+ * 这一栏故意不看分数：打分层评的是「值不值得做」，而有些事是「不做也得知道」。
+ * 热度是滚动的（48 小时半衰、7 天窗口），所以只要还在讨论就会一直挂在上面。
+ */
+async function getMustKnow() {
+  if (state.mustknow) return state.mustknow;
+  const rows = await getHot().catch(() => []);
+  state.mustknow = rows.filter((h) => h.sources >= 3).slice(0, 6);
+  return state.mustknow;
+}
+
+function mustKnowStrip(rows) {
+  if (!rows.length) return '';
+  return `
+  <section class="mk">
+    <div class="mk-head"><b>今日必知</b><span>全网都在说 · 不看分数 · 只要还在讨论就一直在这</span></div>
+    ${rows
+      .map((h) => {
+        const days = Math.max(1, Math.round((new Date(h.last_at) - new Date(h.first_at)) / 86400000));
+        const names = String(h.source_names || '').split(' / ').slice(0, 3).join(' / ');
+        return `<a class="mk-row"${h.url ? ` href="${esc(h.url)}" target="_blank" rel="noopener"` : ''}>
+        <span class="mk-s">${h.sources}</span>
+        <span class="mk-t">${esc(h.title)}</span>
+        <span class="mk-m">${esc(names)}${days > 1 ? ` · 已持续 ${days} 天` : ''}</span>
+      </a>`;
+      })
+      .join('')}
+  </section>`;
 }
 
 async function renderBoard(radar) {
@@ -135,14 +167,15 @@ async function renderBoard(radar) {
   if (!data.entries.filter((e) => state.all || e.pass !== false).length) {
     const st = await getStats().catch(() => null);
     const noModel = st && typeof st.scored === 'number' && st.scored === 0;
+    const mk0 = radar === 'topic' ? mustKnowStrip(await getMustKnow()) : '';
     el.innerHTML = noModel
-      ? `<div class="empty">
+      ? mk0 + `<div class="empty">
           <strong>打分层还没跑起来。</strong><br /><br />
           抓取是正常的（已经存了 ${st.items} 条资讯、归并成 ${st.events} 个事件），但还没有任何一条被模型打过分。<br /><br />
           原因通常只有一个：<b>没配模型 key</b>。在 <code>app/.env</code> 里填 <code>LLM_API_KEY</code>，然后跑一次
           <code>npm run run</code>，这一栏就会有内容了。
         </div>`
-      : `<div class="empty">
+      : mk0 + `<div class="empty">
           ${state.all ? '还没有任何打分结果。' : '没有过门槛的条目。'}<br /><br />
           先跑一次 <code>npm run run</code>，或者勾上右上角的「显示未过门槛」降低标准看全量。
         </div>`;
@@ -154,7 +187,8 @@ async function renderBoard(radar) {
     radar === 'topic'
       ? `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按选题价值排序 · 外溢能力权重最高<br /><span style="color:var(--mute)">这一栏回答的是：今天有什么值得写成稿子／视频</span></div>`
       : `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按引进价值排序 · 品质与商业可行性权重最高<br /><span style="color:var(--mute)">这一栏回答的是：今天有什么游戏值得谈代理／上架／合作</span></div>`;
-  el.innerHTML = head + list.map((e) => card(e, e.pass !== false)).join('');
+  const mk = radar === 'topic' ? mustKnowStrip(await getMustKnow()) : '';
+  el.innerHTML = mk + head + list.map((e) => card(e, e.pass !== false)).join('');
 }
 
 async function renderHot() {

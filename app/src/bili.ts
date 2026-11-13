@@ -181,13 +181,18 @@ interface RawItem {
   bvid?: unknown;
   author?: unknown;
   tag?: unknown;
+  pubdate?: unknown;
+  duration?: unknown;
+  description?: unknown;
+  review?: unknown;
 }
 
 /** 调一次站内搜索。code 原样带回去，由上层决定要不要刷密钥重试。 */
 async function searchRaw(
   keyword: string,
   cookie: string,
-  mixin: string
+  mixin: string,
+  extra: Record<string, string | number> = {}
 ): Promise<{ code: number; list: RawItem[] } | null> {
   const params: Record<string, string | number> = {
     keyword,
@@ -195,6 +200,7 @@ async function searchRaw(
     page_size: PAGE_SIZE,
     search_type: 'video',
     wts: Math.floor(Date.now() / 1000),
+    ...extra,
   };
   const j = await api(`${SEARCH_URL}?${signedQuery(params, mixin)}`, cookie);
   if (!j) return null;
@@ -310,6 +316,107 @@ export async function searchPlays(keyword: string, opts: { limit?: number } = {}
     };
   } catch {
     /* 任何意外都不外抛，调用方按「无数据」处理 */
+    return null;
+  }
+}
+
+export interface BiliVideo {
+  bvid: string;
+  title: string;
+  url: string;
+  author: string;
+  plays: number;
+  comments: number;
+  tag: string;
+  description: string;
+  publishedAt: string | null;
+  durationSec: number;
+}
+
+/** "12:34" / "1:02:03" → 秒。拿不到算 0。 */
+function durationSec(v: unknown): number {
+  const s = String(v ?? '').trim();
+  if (!s) return 0;
+  const parts = s.split(':').map((x) => Number(x.replace(/[^\d]/g, '')));
+  if (!parts.length || parts.some((n) => !Number.isFinite(n))) return 0;
+  return parts.reduce((acc, n) => acc * 60 + n, 0);
+}
+
+/**
+ * 按「播放量排序 + 时间窗」抓站内热门视频，用来发现选题母矿。
+ *
+ * 和 searchPlays 的区别：那边是给某个游戏名算热度，这边是拿一个宽泛关键词
+ * （如「独立游戏」「游戏开发」）捞出这段时间内播放最高的若干条视频，
+ * 直接当条目入账 —— 上周漏掉的「化学滴定」「游戏开发者太把数学当回事」
+ * 这两条 A 级选题就属于这类：媒体没写，但 B 站几十万播放。
+ *
+ * 任何失败返回 null，不抛异常。
+ */
+export async function searchHot(
+  keyword: string,
+  opts: { days?: number; limit?: number; minDurationSec?: number; order?: 'click' | 'pubdate' } = {}
+): Promise<BiliVideo[] | null> {
+  const kw = (keyword ?? '').trim();
+  if (!kw) return null;
+  const days = Math.min(Math.max(Math.trunc(opts?.days ?? 3) || 3, 1), 30);
+  const limit = Math.min(Math.max(Math.trunc(opts?.limit ?? 10) || 10, 1), PAGE_SIZE);
+  const minDurationSec = Math.max(0, Math.trunc(opts?.minDurationSec ?? 0));
+  const order = opts?.order === 'pubdate' ? 'pubdate' : 'click';
+
+  try {
+    const cookie = await getCookie();
+    if (!cookie) return null;
+    let mixin = await getMixin(cookie);
+    if (!mixin) return null;
+
+    const now = Math.floor(Date.now() / 1000);
+    const window = {
+      order,
+      pubtime_begin_s: now - days * 86_400,
+      pubtime_end_s: now,
+    };
+
+    let res = await searchRaw(kw, cookie, mixin, window);
+    if (res && (res.code === -352 || res.code === -403)) {
+      mixin = await getMixin(cookie, true);
+      if (!mixin) return null;
+      res = await searchRaw(kw, cookie, mixin, window);
+    }
+    if (!res || res.code !== 0) return null;
+
+    const anchor = keywordAnchor(kw);
+    const out: BiliVideo[] = [];
+    for (const it of res.list) {
+      const bvid = str(it.bvid).trim();
+      if (!bvid) continue;
+      const title = cleanText(str(it.title));
+      const tag = cleanText(str(it.tag));
+      const author = cleanText(str(it.author));
+      // 宽泛词（游戏/单机）会带出一堆无关内容，仍要求关键词出现在标题/标签/UP 主里。
+      // 但宽泛词本身信息量低，这里只在 anchors >= 2 字时才拦，避免把「游戏」类目整个挡掉。
+      if (anchor.length >= 2 && !normText(`${title} ${tag} ${author}`).includes(anchor)) continue;
+
+      const dur = durationSec(it.duration);
+      if (minDurationSec && dur && dur < minDurationSec) continue;
+
+      const pub = toNum(it.pubdate);
+      out.push({
+        bvid,
+        title,
+        url: `https://www.bilibili.com/video/${bvid}`,
+        author,
+        plays: toNum(it.play),
+        comments: toNum(it.review),
+        tag,
+        description: cleanText(str(it.description)).slice(0, 300),
+        publishedAt: pub > 0 ? new Date(pub * 1000).toISOString() : null,
+        durationSec: dur,
+      });
+    }
+
+    out.sort((a, b) => b.plays - a.plays);
+    return out.slice(0, limit);
+  } catch {
     return null;
   }
 }

@@ -173,3 +173,18 @@ td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; color: va
   .card { grid-template-columns: 1fr; gap: 8px; }
   .score { display: flex; align-items: baseline; gap: 8px; }
 }
+
+/* 今日必知：热度驱动、不看分数。放在选题队列上面，是「不做也得知道」的那部分。 */
+.mk { margin: 0 0 22px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel); }
+.mk-head { display: flex; align-items: baseline; gap: 10px; padding: 11px 14px 9px; border-bottom: 1px solid var(--line); }
+.mk-head b { font-size: 13px; letter-spacing: .5px; color: var(--amber); }
+.mk-head span { font-size: 11.5px; color: var(--mute); font-family: var(--mono); }
+.mk-row { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: baseline;
+  padding: 9px 14px; border-top: 1px solid var(--line); text-decoration: none; color: inherit; }
+.mk-row:first-of-type { border-top: 0; }
+.mk-row:hover { background: rgba(255, 255, 255, .03); }
+.mk-s { font-family: var(--mono); font-size: 12px; color: var(--amber); text-align: right; }
+.mk-t { font-size: 13.5px; line-height: 1.45; }
+.mk-m { font-size: 11px; color: var(--mute); font-family: var(--mono); white-space: nowrap; }
+@media (max-width: 720px) { .mk-row { grid-template-columns: 26px 1fr; } .mk-m { grid-column: 2; } }
+.meta .also { color: var(--dim); font-size: 11px; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-23T04:02:21.431Z",
+  "updatedAt": "2026-11-13T08:50:50.096Z",
   "note": "信源配置。改这里不用改代码。tier 3=一手官方，2=准一手，1=二手聚合。格式说明见 docs/sources.md",
   "sources": [
     {
@@ -341,6 +341,38 @@
         "image": "<img[^>]*src=\"([^\"]+)\""
       },
       "note": "站内 RSS 已废（/rss/ 403、/rss.xml 404、/rss.aspx 404），只能扒 /news/。单页能出 176~178 条（页面把「今日推荐/单机电玩/NS/手游/网游/业界/硬件/科技」多个 tab 全部预渲染，li 结构一致），时间到分，是本组单次产出最大的源。⚠ 因为 tab 混排，结果【不是】时间倒序，入库/展示前必须按 publishedAt 重排。评论区是畅言（cy_comment + data-sid）JS 异步注入，HTML 里只有空 div，抓不到热度。分页走 contentpaging 的 PageList() JS，没有干净的 ?page= 入口，靠单页量即可。"
+    },
+    {
+      "id": "bilibili-niche",
+      "name": "B站 UP 主选题矿",
+      "role": "community",
+      "region": "cn",
+      "type": "bili",
+      "url": "https://api.bilibili.com/x/web-interface/wbi/search/type",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 180,
+      "headers": {},
+      "adapter": {
+        "keywords": [
+          "独立游戏",
+          "游戏开发",
+          "游戏设计",
+          "单机游戏",
+          "新游",
+          "游戏机制",
+          "游戏科普",
+          "像素游戏",
+          "Steam游戏",
+          "硬核游戏"
+        ],
+        "days": 3,
+        "perKeyword": 5,
+        "minPlays": 50000,
+        "minDurationSec": 120,
+        "maxItems": 40
+      },
+      "note": "补「媒体没写、但 B 站几十万播放」的选题母矿：全站热门榜只覆盖前 100 条，垂类 10–50 万播放的视频进不来，而人工选题会的 A 级题恰恰在这里（如「化学滴定」「游戏开发者太把数学当回事」）。走 wbi 签名搜索，order=click + pubtime 时间窗，按播放量排序后按关键词取头部；要求关键词出现在标题/标签/UP 主名里，过滤 <2 分钟的搬运切片。tier 2：UP 主观点不是官方信源。判重走 bvid 归一化 URL。"
     },
     {
       "id": "reddit_r_games",

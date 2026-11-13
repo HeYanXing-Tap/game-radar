@@ -43,6 +43,38 @@
         }
       },
       "note": "贴吧热议话题。热度单位是 W（万），用 mult 换算成真实讨论数。链接靠 query 区分，依赖 extractRows 保留 query 的去重键。"
+    },
+    {
+      "id": "bilibili-niche",
+      "name": "B站 UP 主选题矿",
+      "role": "community",
+      "region": "cn",
+      "type": "bili",
+      "url": "https://api.bilibili.com/x/web-interface/wbi/search/type",
+      "tier": 2,
+      "enabled": true,
+      "intervalMin": 180,
+      "headers": {},
+      "adapter": {
+        "keywords": [
+          "独立游戏",
+          "游戏开发",
+          "游戏设计",
+          "单机游戏",
+          "新游",
+          "游戏机制",
+          "游戏科普",
+          "像素游戏",
+          "Steam游戏",
+          "硬核游戏"
+        ],
+        "days": 3,
+        "perKeyword": 5,
+        "minPlays": 50000,
+        "minDurationSec": 120,
+        "maxItems": 40
+      },
+      "note": "补「媒体没写、但 B 站几十万播放」的选题母矿：全站热门榜只覆盖前 100 条，垂类 10–50 万播放的视频进不来，而人工选题会的 A 级题恰恰在这里（如「化学滴定」「游戏开发者太把数学当回事」）。走 wbi 签名搜索，order=click + pubtime 时间窗，按播放量排序后按关键词取头部；要求关键词出现在标题/标签/UP 主名里，过滤 <2 分钟的搬运切片。tier 2：UP 主观点不是官方信源。判重走 bvid 归一化 URL。"
     }
   ]
 }

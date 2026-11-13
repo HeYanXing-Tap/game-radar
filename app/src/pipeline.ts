@@ -209,6 +209,8 @@ export interface BoardEntry {
   event_heat: number | null;
   event_sources: number | null;
   scored_at: string;
+  /** 同事件的其它篇数。同一件事被十家媒体写，榜上只该占一行。 */
+  also?: number;
 }
 
 /** 精选：过了门槛的条目，按分数 + 事件热度排。 */
@@ -247,10 +249,17 @@ export function board(radar: Radar, opts: { days?: number; limit?: number; onlyP
     heatMap.set(r.event_id, { heat: r.heat, sources: r.sources });
   }
 
+  // 同一件事只留一条（分最高的那条），其余记进 also。
+  // 否则黄仁勋辞职这种新闻会一次占掉半个榜，把真正不一样的选题挤下去。
+  const seenEvent = new Map<number, BoardEntry>();
   const out: BoardEntry[] = [];
   for (const r of rows) {
     const threshold = thresholdFor(radar, r.tier);
     if (onlyPassing && r.total < threshold) continue;
+    if (r.event_id) {
+      const prev = seenEvent.get(r.event_id);
+      if (prev) { prev.also = (prev.also ?? 1) + 1; continue; }
+    }
     const h = r.event_id ? heatMap.get(r.event_id) : undefined;
     const { axes_json, games_json, heat_json, ...rest } = r;
     out.push({
@@ -260,7 +269,9 @@ export function board(radar: Radar, opts: { days?: number; limit?: number; onlyP
       rank: heat_json ? (JSON.parse(heat_json) as { rank?: number }).rank ?? null : null,
       event_heat: h?.heat ?? null,
       event_sources: h?.sources ?? null,
+      also: 1,
     });
+    if (r.event_id) seenEvent.set(r.event_id, out[out.length - 1]);
     if (out.length >= limit) break;
   }
   return out;

@@ -51,11 +51,17 @@ export async function cluster(onProgress?: (msg: string) => void): Promise<{ mer
       targetId = best.ev.id;
     } else if (best && best.sim >= GRAY_LOW && hasLlm()) {
       judged++;
-      const verdict = await chatJson<{ same: boolean; relation?: string }>(
-        `判断两条游戏资讯是否在讲同一件事。\n\nA（已有事件）：${best.ev.title}\nB（新条目）：${it.title}\n${it.summary ? `B 摘要：${it.summary.slice(0, 300)}` : ''}\n\n只输出 JSON：{"same": true/false, "relation": "same|followup|different"}`,
-        { system: '你是新闻编辑，擅长判断两条资讯是否报道同一件事。只输出 JSON。', temperature: 0, model: llmConfig().reviewModel || undefined }
-      );
-      if (verdict?.same) targetId = best.ev.id;
+      // 判同失败不能中断整轮聚簇：单条出错就当「不是同一件事」，
+      // 让它独立成事件（宁可多一个事件，也不能把整批条目丢掉）。
+      try {
+        const verdict = await chatJson<{ same: boolean; relation?: string }>(
+          `判断两条游戏资讯是否在讲同一件事。\n\nA（已有事件）：${best.ev.title}\nB（新条目）：${it.title}\n${it.summary ? `B 摘要：${it.summary.slice(0, 300)}` : ''}\n\n只输出 JSON：{"same": true/false, "relation": "same|followup|different"}`,
+          { system: '你是新闻编辑，擅长判断两条资讯是否报道同一件事。只输出 JSON。', temperature: 0, model: llmConfig().reviewModel || undefined }
+        );
+        if (verdict?.same) targetId = best.ev.id;
+      } catch {
+        // 忽略，按「不同」处理
+      }
     }
 
     if (targetId) {
@@ -105,6 +111,8 @@ export interface HotEvent {
   delta: number;
   source_names: string;
   top_tier: number;
+  /** 代表链接：优先一手来源、其次最新的一条。给「今日必知」直接点进去用。 */
+  url: string | null;
 }
 
 /**
@@ -123,11 +131,13 @@ export function computeHeat(): HotEvent[] {
     tier: number;
     ts: string;
     srcname: string;
+    iurl: string;
   }>(
     `SELECT e.id AS event_id, COALESCE(e.title_zh, e.title) AS title, e.summary, e.first_at, e.last_at,
             i.source_id AS src, s.tier AS tier,
             COALESCE(i.published_at, i.fetched_at) AS ts,
-            s.name AS srcname
+            s.name AS srcname,
+            i.url AS iurl
      FROM events e
      JOIN items i ON i.event_id = e.id AND i.is_dup = 0
      JOIN sources s ON s.id = i.source_id
@@ -141,7 +151,7 @@ export function computeHeat(): HotEvent[] {
     new Date(Date.now() - 7 * 86_400_000).toISOString()
   );
 
-  const byEvent = new Map<number, HotEvent & { _seen: Set<string>; _seen6: Set<string> }>();
+  const byEvent = new Map<number, HotEvent & { _seen: Set<string>; _seen6: Set<string>; _urlTier: number }>();
   const now = Date.now();
 
   for (const r of rows) {
@@ -160,12 +170,19 @@ export function computeHeat(): HotEvent[] {
         delta: 0,
         source_names: '',
         top_tier: 1,
+        url: null,
         _seen: new Set(),
         _seen6: new Set(),
+        _urlTier: 0,
       };
       byEvent.set(r.event_id, e);
     }
     e.items++;
+    // 代表链接：来源等级高的优先（一手 > 二手），同级保留先出现的
+    if (r.iurl && r.tier > e._urlTier) {
+      e._urlTier = r.tier;
+      e.url = r.iurl;
+    }
     const age = now - new Date(r.ts).getTime();
     if (age > 48 * 3_600_000) continue;
 
@@ -187,7 +204,7 @@ export function computeHeat(): HotEvent[] {
 
   return [...byEvent.values()]
     .map((e) => {
-      const { _seen, _seen6, ...rest } = e;
+      const { _seen, _seen6, _urlTier, ...rest } = e;
       return { ...rest, heat: Math.round(rest.heat * 100) / 100, heat_6h: Math.round(rest.heat_6h * 100) / 100, delta: Math.round((rest.heat - rest.heat_6h) * 100) / 100 };
     })
     .sort((a, b) => b.heat - a.heat);

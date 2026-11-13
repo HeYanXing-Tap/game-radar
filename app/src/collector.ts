@@ -3,6 +3,7 @@ import { extractHtmlList, mapJsonItems, parseFeed, parseDate, stripHtml } from '
 import { digPath, extractRows, type JsonSourceAdapter, type RowsAdapter } from './adapters.ts';
 import { exec, log, nowIso, one, titleKey, urlKey } from './db.ts';
 import { dueSources, type SourceRow } from './sources.ts';
+import { searchHot } from './bili.ts';
 import type { RawItem } from './types.ts';
 
 /** "7903979" / "3.1万" / 12.5 → 数字；拿不到就 null */
@@ -67,6 +68,55 @@ export async function fetchSource(
   const adapter = src.adapter_json ? (JSON.parse(src.adapter_json) as Record<string, unknown>) : {};
   const headers: Record<string, string> = { ...baseHeaders, ...((adapter.headers as Record<string, string>) ?? {}) };
   if (adapter.referer) headers.Referer = String(adapter.referer);
+
+  // B 站热门视频源：没有固定 URL，按关键词现搜，所以不走下面的 politeFetch。
+  if (src.type === 'bili') {
+    const keywords = Array.isArray(adapter.keywords) ? adapter.keywords.map(String).filter(Boolean) : [];
+    if (!keywords.length) return { items: [], error: 'bili 源缺少 keywords' };
+    const days = Number(adapter.days ?? 3);
+    const perKeyword = Number(adapter.perKeyword ?? 6);
+    const minPlays = Number(adapter.minPlays ?? 30_000);
+    const minDurationSec = Number(adapter.minDurationSec ?? 90);
+    const maxItems = Number(adapter.maxItems ?? 40);
+    const seen = new Set<string>();
+    const picked: RawItem[] = [];
+    for (const kw of keywords) {
+      if (picked.length >= maxItems) break;
+      let vids: Awaited<ReturnType<typeof searchHot>> = null;
+      try {
+        vids = await searchHot(kw, { days, limit: perKeyword + 8, minDurationSec });
+      } catch {
+        vids = null;
+      }
+      if (!vids) continue; // 单个关键词失败不影响整体
+      let taken = 0;
+      for (const v of vids) {
+        if (taken >= perKeyword || picked.length >= maxItems) break;
+        if (seen.has(v.bvid)) continue;
+        if (v.plays < minPlays) continue;
+        seen.add(v.bvid);
+        taken++;
+        picked.push({
+          sourceId: src.id,
+          url: v.url,
+          title: v.title,
+          summary: [
+            v.author ? `UP主：${v.author}` : '',
+            v.tag ? `标签：${v.tag}` : '',
+            v.description,
+          ]
+            .filter(Boolean)
+            .join('｜')
+            .slice(0, 600),
+          author: v.author,
+          publishedAt: v.publishedAt,
+          lang: 'zh',
+          heat: { plays: v.plays, comments: v.comments },
+        });
+      }
+    }
+    return { items: picked };
+  }
 
   const res = await politeFetch(src.url, {
     headers,
