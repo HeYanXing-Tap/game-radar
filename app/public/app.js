@@ -131,8 +131,13 @@ function card(e, passing) {
  */
 async function getMustKnow() {
   if (state.mustknow) return state.mustknow;
-  const rows = await getHot().catch(() => []);
-  state.mustknow = rows.filter((h) => h.sources >= 3).slice(0, 6);
+  // 优先读导出时算好的 mustknow.json（按「几家在说」排，不受 48 小时热度衰减影响）
+  try {
+    state.mustknow = await api(DATA('mustknow'));
+  } catch {
+    const rows = await getHot().catch(() => []);
+    state.mustknow = rows.filter((h) => h.sources >= 3).slice(0, 6);
+  }
   return state.mustknow;
 }
 

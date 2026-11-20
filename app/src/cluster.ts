@@ -151,7 +151,7 @@ export function computeHeat(): HotEvent[] {
     new Date(Date.now() - 7 * 86_400_000).toISOString()
   );
 
-  const byEvent = new Map<number, HotEvent & { _seen: Set<string>; _seen6: Set<string>; _urlTier: number }>();
+  const byEvent = new Map<number, HotEvent & { _seen: Set<string>; _seen6: Set<string>; _seenAll: Set<string>; _urlTier: number }>();
   const now = Date.now();
 
   for (const r of rows) {
@@ -173,6 +173,7 @@ export function computeHeat(): HotEvent[] {
         url: null,
         _seen: new Set(),
         _seen6: new Set(),
+        _seenAll: new Set(),
         _urlTier: 0,
       };
       byEvent.set(r.event_id, e);
@@ -183,6 +184,15 @@ export function computeHeat(): HotEvent[] {
       e._urlTier = r.tier;
       e.url = r.iurl;
     }
+    // 「几家在说」按整个窗口算：一周內有五家写过，就算五家。
+    // 热度仍然只算 48 小时且半衰——热的会掉下去，但「谁在说」不会一夜蒸发。
+    if (!e._seenAll.has(r.src)) {
+      e._seenAll.add(r.src);
+      e.sources++;
+      e.top_tier = Math.max(e.top_tier, r.tier);
+      e.source_names = e.source_names ? `${e.source_names} / ${r.srcname}` : r.srcname;
+    }
+
     const age = now - new Date(r.ts).getTime();
     if (age > 48 * 3_600_000) continue;
 
@@ -192,9 +202,6 @@ export function computeHeat(): HotEvent[] {
     if (!e._seen.has(r.src)) {
       e._seen.add(r.src);
       e.heat += weight;
-      e.sources++;
-      e.source_names = e.source_names ? `${e.source_names} / ${r.srcname}` : r.srcname;
-      e.top_tier = Math.max(e.top_tier, r.tier);
     }
     if (age <= 6 * 3_600_000 && !e._seen6.has(r.src)) {
       e._seen6.add(r.src);

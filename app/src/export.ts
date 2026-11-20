@@ -51,9 +51,19 @@ export function exportStatic(): Record<string, number> {
     }
   }
 
-  const hot = computeHeat().slice(0, 40);
+  const allHeat = computeHeat();
+  const hot = allHeat.slice(0, 40);
   write('hot.json', hot);
   counts.hot = hot.length;
+
+  // 今日必知：不看分数，也不按热度排——按「有几个人在说」排。
+  // 热度会随 48 小时半衰掉下去，但「五家媒体都在写」这件事本身不会一夜蒸发。
+  const mustKnow = allHeat
+    .filter((e) => e.sources >= 3)
+    .sort((a, b) => b.sources - a.sources || b.heat - a.heat)
+    .slice(0, 8);
+  write('mustknow.json', mustKnow);
+  counts.mustknow = mustKnow.length;
 
   const digests = listDigests(60);
   write('digests.json', digests);
