@@ -116,7 +116,9 @@ export async function lookupGame(name: string, opts: { fresh?: boolean } = {}): 
     'SELECT steam_appid, meta_json, last_at FROM games WHERE name = ?',
     name
   )[0];
-  if (cached && !opts.fresh && cached.last_at) {
+  // 只缓存「查到了」的结果。查不到的要每次重试——名字匹配规则会改，
+  // 中文名/副标题对不上是常态，把失败也缓存 14 天等于把错判固化了。
+  if (cached && !opts.fresh && cached.last_at && cached.steam_appid) {
     const age = Date.now() - new Date(cached.last_at).getTime();
     if (age < CACHE_DAYS * 86_400_000) {
       const meta = cached.meta_json ? (JSON.parse(cached.meta_json) as SteamFacts) : null;
