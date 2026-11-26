@@ -18,7 +18,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -33,6 +33,7 @@ jobs:
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           FETCH_DELAY_MS: '1200'
+          LLM_MAX_CALLS_PER_RUN: '950'
         run: node --disable-warning=ExperimentalWarning src/cli.ts run
 
       - name: 导出静态数据

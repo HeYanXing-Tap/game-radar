@@ -55,10 +55,11 @@ export async function cluster(onProgress?: (msg: string) => void): Promise<{ mer
       // 让它独立成事件（宁可多一个事件，也不能把整批条目丢掉）。
       try {
         const verdict = await chatJson<{ same: boolean; relation?: string }>(
-          `判断两条游戏资讯是否在讲同一件事。\n\nA（已有事件）：${best.ev.title}\nB（新条目）：${it.title}\n${it.summary ? `B 摘要：${it.summary.slice(0, 300)}` : ''}\n\n只输出 JSON：{"same": true/false, "relation": "same|followup|different"}`,
+          `判断两条游戏资讯是不是同一个「事件」。\n\nA（已有事件）：${best.ev.title}\nB（新条目）：${it.title}\n${it.summary ? `B 摘要：${it.summary.slice(0, 300)}` : ''}\n\n判据：是不是同一个主体、同一个触发事件。\n- 同一件事的**后续发展、各方反应、不同角度、补充细节** → 算同一件事（这是最常见的情况：一家先报，第二天十家从不同角度再写一遍）\n- 只是同一个公司/游戏，但**不是同一起事**（比如上午写它裁员、下午写它发新游戏）→ 不算\n\n只输出 JSON：{"same": true/false, "relation": "same|followup|different"}`,
           { system: '你是新闻编辑，擅长判断两条资讯是否报道同一件事。只输出 JSON。', temperature: 0, model: llmConfig().reviewModel || undefined }
         );
-        if (verdict?.same) targetId = best.ev.id;
+        // relation=different 时不并（模型自相矛盾时的保守兜底）
+        if (verdict?.same && verdict.relation !== 'different') targetId = best.ev.id;
       } catch {
         // 忽略，按「不同」处理
       }

@@ -1,0 +1,27 @@
+# 编辑部 Slack「重点游戏发掘与记录」里出现过的作品名。
+# 每天云端跑一次 backfill --namesfile，Steam 上有的就补进库——
+# 这些是人工认可的标的，不该靠媒体稿碰运气抓到。
+No Asteroids
+全军出鸡：鸡械绿洲自走棋
+just volleyball
+转运军团
+Dungeonbound
+未知伤亡
+战锤幸存者 Warhammer Survivors
+SLAM TANK
+Ballistic.exe
+我带过的最差的一届
+叫魂
+机械迷城2
+Find The Needle
+摇摇晃晃去旅行
+针影裁梦
+巨蟹横行
+人偶之影
+黑街厨神
+流浪地球：望日
+深空当铺
+异克斯小队
+Chalk Warfare
+VHOLUME
+渔力全开

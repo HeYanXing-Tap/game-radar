@@ -84,9 +84,14 @@ export function exportStatic(): Record<string, number> {
     events: q<{ n: number }>('SELECT COUNT(*) AS n FROM events')[0]?.n ?? 0,
     sources: q<{ n: number }>('SELECT COUNT(*) AS n FROM sources WHERE enabled = 1')[0]?.n ?? 0,
     scored: q<{ n: number }>('SELECT COUNT(*) AS n FROM scores')[0]?.n ?? 0,
+    // 只认已经发生的时刻：Steam 未发售作品的发售日会混进来，让「最新」显示成未来
     latest_item:
-      q<{ ts: string }>('SELECT COALESCE(published_at, fetched_at) AS ts FROM items ORDER BY COALESCE(published_at, fetched_at) DESC LIMIT 1')[0]
-        ?.ts ?? null,
+      q<{ ts: string }>(
+        `SELECT COALESCE(published_at, fetched_at) AS ts FROM items
+         WHERE COALESCE(published_at, fetched_at) <= ?
+         ORDER BY COALESCE(published_at, fetched_at) DESC LIMIT 1`,
+        new Date().toISOString()
+      )[0]?.ts ?? null,
     generated_at: new Date().toISOString(),
   };
   write('stats.json', stats);

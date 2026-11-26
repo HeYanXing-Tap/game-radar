@@ -124,7 +124,12 @@ const SEEN = `SELECT 1 FROM items WHERE url_key = ? LIMIT 1`;
  * @param params Steam 搜索参数串
  * @param want   目标条数（内部按 25 一页翻，直到凑够或连续空页）
  */
-async function scanList(params: string, want: number, tag: string): Promise<RawItem[]> {
+async function scanList(
+  params: string,
+  want: number,
+  tag: string,
+  opts: { requireChinese?: boolean; minReviews?: number } = {}
+): Promise<RawItem[]> {
   const out: RawItem[] = [];
   for (let start = 0; start < want * 2 && out.length < want; start += 25) {
     const hits = await search(params, start, 25);
@@ -136,8 +141,10 @@ async function scanList(params: string, want: number, tag: string): Promise<RawI
       const d = await details(h.appid);
       if (!d) continue;
       if (d.type !== 'game' && d.type !== 'demo') continue;
-      // 只留支持中文的：这是引进业务的实际门槛，也挡掉大量与国内受众无关的条目
-      if (!d.chinese) continue;
+      // 默认只留支持中文的：这是引进业务的实际门槛，也挡掉大量与国内受众无关的条目。
+      // 但「全球榜」这一路要的恰恰是没有中文的作品——那是还没人代理的窗口。
+      if (opts.requireChinese !== false && !d.chinese) continue;
+      if (opts.minReviews && (d.reviews ?? 0) < opts.minReviews) continue;
       const released = !d.comingSoon && d.releaseDate && new Date(d.releaseDate).getTime() <= Date.now();
       const price = d.priceYuan === null ? '价格未知' : d.priceYuan === 0 ? '免费' : `国区约 ${d.priceYuan} 元`;
       out.push({
@@ -146,6 +153,7 @@ async function scanList(params: string, want: number, tag: string): Promise<RawI
         title: d.name || h.name,
         summary: [
           `[${tag}]`,
+          d.chinese ? '' : '暂不支持中文',
           d.genres,
           d.desc,
           `发售：${d.comingSoon ? '尚未发售' : (d.releaseDate ?? rd(d))}`,
@@ -177,14 +185,18 @@ export interface DiscoverResult {
   new: number;
   coming: number;
   demo: number;
+  global: number;
   inserted: number;
 }
 
-export async function discoverSteam(opts: { newCount?: number; comingCount?: number; demoCount?: number } = {}): Promise<DiscoverResult> {
+export async function discoverSteam(
+  opts: { newCount?: number; comingCount?: number; demoCount?: number; globalCount?: number } = {}
+): Promise<DiscoverResult> {
   ensureSource();
   const nNew = opts.newCount ?? 50;
   const nComing = opts.comingCount ?? 30;
   const nDemo = opts.demoCount ?? 30;
+  const nGlobal = opts.globalCount ?? 20;
 
   const LANG = 'supportedlang=schinese&cc=cn';
 
@@ -194,7 +206,7 @@ export async function discoverSteam(opts: { newCount?: number; comingCount?: num
     ['demo', `sort_by=Released_DESC&category1=998&${LANG}`, nDemo, '带Demo'],
   ];
 
-  const result: DiscoverResult = { new: 0, coming: 0, demo: 0, inserted: 0 };
+  const result: DiscoverResult = { new: 0, coming: 0, demo: 0, global: 0, inserted: 0 };
   const all: RawItem[] = [];
   for (const [key, params, want, tag] of lists) {
     const items = await scanList(params, want, tag);
@@ -204,6 +216,17 @@ export async function discoverSteam(opts: { newCount?: number; comingCount?: num
     log(`· Steam ${tag}：新增 ${items.length} 条`);
     all.push(...items);
   }
+
+  // 第四路：全球新发售，不看语言。要的是「海外已经在卖、中文版还没有」的作品——
+  // 那正是引进最理想的窗口（等中文版有了，代理权也谈完了）。
+  // 用「评价数 ≥ 150」当体量门槛，挡掉刚上架没人玩的。
+  const globalItems = await scanList(`sort_by=Released_DESC&cc=cn`, nGlobal, '全球新发售·无中文', {
+    requireChinese: false,
+    minReviews: 150,
+  }).then((list) => list.filter((it) => /暂不支持中文/.test(it.summary ?? '')));
+  result.global = globalItems.length;
+  log(`· Steam 全球新发售（暂无中文）：新增 ${globalItems.length} 条`);
+  all.push(...globalItems);
 
   // 同一轮里三个列表会重叠，saveItems 会按 url_key 去重，这里先合并省一次写入
   const byUrl = new Map<string, RawItem>();

@@ -51,7 +51,7 @@ export function llmConfig(): LlmConfig {
     reviewModel: process.env.LLM_REVIEW_MODEL || '',
     cheapModel: process.env.LLM_CHEAP_MODEL || '',
     timeoutMs: Number(process.env.LLM_TIMEOUT_MS || 120000),
-    maxCallsPerRun: Number(process.env.LLM_MAX_CALLS_PER_RUN || 400),
+    maxCallsPerRun: Number(process.env.LLM_MAX_CALLS_PER_RUN || 950),
     concurrency: Number(process.env.LLM_CONCURRENCY || 4),
   };
 }

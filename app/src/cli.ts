@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { collect } from './collector.ts';
 import { backfillAppids, discoverSteam } from './discover.ts';
+import { lookupGame } from './steam.ts';
 import { syncSources, toSourceRow } from './sources.ts';
 import { readFileSync } from 'node:fs';
 import { fetchSource } from './collector.ts';
@@ -62,9 +63,29 @@ async function main(): Promise<void> {
     case 'backfill': {
       const started = nowIso();
       const raw = flag('appids') ?? (flag('file') ? readFileSync(flag('file') as string, 'utf8') : '');
-      const ids = raw.split(/[\s,]+/).filter(Boolean);
+      let ids = raw.split(/[\s,]+/).filter(Boolean);
+      // --names：只知道游戏名（比如从 Slack 里抄下来的），先拿 Steam 搜索换 appid
+      const namesFile = flag('namesfile');
+      const namesRaw = namesFile ? readFileSync(namesFile, 'utf8') : (flag('names') ?? '');
+      const names = namesRaw
+        .split(/[\n,]+/)
+        .map((x) => x.trim())
+        .filter((x) => x && !x.startsWith('#'));
+      if (names.length) {
+        for (const n of names) {
+          const f = await lookupGame(n);
+          if (f.appid) {
+            log(`· ${n} → appid ${f.appid}（${f.matched}）`);
+            ids.push(String(f.appid));
+          } else {
+            log(`· ${n} → Steam 上没搜到，跳过`);
+          }
+          await new Promise((r) => setTimeout(r, 400));
+        }
+        ids = [...new Set(ids)];
+      }
       if (!ids.length) {
-        log('用法：backfill --appids=5186030,3432980  或  backfill --file=/tmp/ids.txt');
+        log('用法：backfill --appids=5186030,3432980  或  --file=/tmp/ids.txt  或  --names="游戏A,游戏B"  或  --namesfile=slack-games.txt');
         return;
       }
       const r = await backfillAppids(ids);
@@ -92,7 +113,10 @@ async function main(): Promise<void> {
     case 'score': {
       const started = nowIso();
       const radar = (flag('radar') ?? 'both') as Radar | 'both';
-      const limit = Number(flag('limit') ?? 200);
+      // 两个雷达的量不一样：选题每天几百条候选，重点游戏只有几十条。
+      // 单独给预算，避免一边吃光另一边（之前 game 只评了 12 条就是这么来的）。
+      const limitFlag = flag('limit') ? Number(flag('limit')) : null;
+      const limitOf = (r: Radar) => limitFlag ?? (r === 'topic' ? 240 : 180);
       const days = Number(flag('days') ?? 3);
       const out: Record<string, unknown> = {};
       const ignorePrescreen = has('all');
@@ -133,7 +157,7 @@ async function main(): Promise<void> {
       log('2/8 抓取媒体与热榜');
       const c = await collect(has('force'));
       log('3/8 Steam 发现（媒体不会写的小体量作品）');
-      const dc = await discoverSteam({ newCount: 60, comingCount: 40, demoCount: 40 });
+      const dc = await discoverSteam({ newCount: 60, comingCount: 40, demoCount: 40, globalCount: 20 });
       log('4/8 聚簇');
       const cl = await cluster();
       log('5/8 预筛（标题粗排，便宜）');
@@ -142,12 +166,12 @@ async function main(): Promise<void> {
       log('6/8 翻译英文标题');
       const tr = await translatePending({ limit: 300 });
       log('7/8 细评（五轴打分，只打过线的）');
-      const t = await scorePending({ radar: 'topic', limit });
-      const g = await scorePending({ radar: 'game', limit });
+      const t = await scorePending({ radar: 'topic', limit: limitOf('topic') });
+      const g = await scorePending({ radar: 'game', limit: limitOf('game') });
       log('8/8 日报');
       const d = await buildDigest();
       recordRun('run', started, { collect: c, discover: dc, cluster: cl, translate: tr, prescreen: { topic: pt, game: pg }, topic: t, game: g, digest: { topicCount: d.topicCount, gameCount: d.gameCount }, llm: stats });
-      log(`完成。选题 ${d.topicCount} 条，作品 ${d.gameCount} 条。`);
+      log(`完成。选题 ${d.topicCount} 条，重点游戏 ${d.gameCount} 条。`);
       return;
     }
 
@@ -187,7 +211,7 @@ async function main(): Promise<void> {
       }
       const passing: Record<string, number> = {};
       for (const r of ['topic', 'game'] as Radar[]) passing[r] = board(r, { days: r === 'game' ? 14 : 3, limit: 200 }).length;
-      console.log(`\n过门槛：选题 ${passing.topic} 条，作品 ${passing.game} 条`);
+      console.log(`\n过门槛：选题 ${passing.topic} 条，重点游戏 ${passing.game} 条`);
       console.log('');
       return;
     }
