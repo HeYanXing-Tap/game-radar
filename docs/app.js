@@ -28,6 +28,7 @@ function relTime(iso) {
   return days < 30 ? `${days} 天前` : d.toLocaleDateString('zh-CN');
 }
 
+const DEFAULT_DAYS = { topic: 3, game: 14 };
 const state = { view: 'topic', days: 3, all: false, cache: new Map(), static: false, mustknow: null };
 
 async function api(path) {
@@ -309,6 +310,13 @@ const RENDER = { topic: () => renderBoard('topic'), game: () => renderBoard('gam
 function switchView(v) {
   if (!RENDER[v]) v = 'topic';
   state.view = v;
+  // 两个雷达的「新鲜」标准不一样：选题按天看，重点游戏按两周看
+  // （游戏从被发现到下决定要不要谈，本来就不是一天的事）
+  if (DEFAULT_DAYS[v]) {
+    state.days = DEFAULT_DAYS[v];
+    const sel = $('#days');
+    if (sel) sel.value = String(state.days);
+  }
   if (location.hash !== `#${v}`) history.replaceState(null, '', `#${v}`);
   document.querySelectorAll('.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.view === v));
   document.querySelectorAll('.view').forEach((s) => s.classList.toggle('hidden', s.id !== `view-${v}`));
