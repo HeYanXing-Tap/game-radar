@@ -92,6 +92,9 @@ export async function buildDigest(dateStr?: string): Promise<Digest> {
     L.push(`**${g.total} 分** · ${g.source_name} · ${toZhTime(g.published_at)} · ${fmtAxes(g.axes)}`);
     L.push('');
     L.push(`**判断**：${g.verdict}`);
+    // 外部事实（Steam 评价数/发售日、B站播放量）是这一栏最硬的证据，早会上直接用得上
+    // facts 自己开头就带「外部事实：」，日报里不用再叠一层前缀
+    if (g.facts) L.push(`**外部数据**：${g.facts.replace(/^外部事实(（[^）]*）)?：/, '')}`);
     if (g.angle) L.push(`**下一步**：${g.angle}`);
     if (g.against) L.push(`**风险**：${g.against}`);
     L.push('');

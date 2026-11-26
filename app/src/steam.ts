@@ -25,9 +25,15 @@ const CACHE_DAYS = 14;
 function norm(s: string): string {
   return s
     .toLowerCase()
-    .replace(/[：:·・—\-–_/\\|'"“”‘’《》()（）[\]]/g, ' ')
+    // 中文标点也要去掉，否则「勇者小队全灭了」和 Steam 上的「勇者小队全灭了。」对不上
+    .replace(/[：:·・—\-–_/\\|'"“”‘’《》()（）[\]。！？，、；…·「」『』【】]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/** 去掉虚词再比：中文游戏名常多一个「的/了」，「我带过最差的一届」和 Steam 上的「我带过的最差的一届」是同一个。 */
+function stripParticles(s: string): string {
+  return s.replace(/[的了个呀吧呢]/g, '');
 }
 
 /** 搜索结果可能跑到别的作品上去（查 Hypnos 会先给 Hypnospace Outlaw），这里做一道名字核对。 */
@@ -36,6 +42,9 @@ function looksSame(query: string, candidate: string): boolean {
   const b = norm(candidate);
   if (!a || !b) return false;
   if (a === b) return true;
+  const pa = stripParticles(a);
+  const pb = stripParticles(b);
+  if (pa && pa === pb) return true;
   if (a.length <= 6 && (b === a || b.startsWith(a) || b.includes(a))) return true;
   const at = new Set(a.split(' ').filter((t) => t.length >= 2));
   const bt = b.split(' ').filter((t) => t.length >= 2);
@@ -52,17 +61,23 @@ function parseRelease(date: string): string | null {
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
+/** 先按原名搜；查不到再拿「主标题」搜一次（中文独立游戏常在 Steam 上挂了副标题）。 */
 async function searchApp(name: string): Promise<{ appid: string; name: string } | null> {
-  const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(name)}&cc=cn&l=schinese`;
-  const r = await politeFetch(url);
-  if (!r.ok) return null;
-  try {
-    const d = JSON.parse(r.body) as { items?: Array<{ id: number; name: string }> };
-    for (const it of d.items ?? []) {
-      if (looksSame(name, it.name)) return { appid: String(it.id), name: it.name };
+  const queries = [name];
+  const main = name.split(/[：:｜|—–\-]/)[0].trim();
+  if (main && main !== name && main.length >= 2) queries.push(main);
+  for (const q of queries) {
+    const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(q)}&cc=cn&l=schinese`;
+    const r = await politeFetch(url);
+    if (!r.ok) continue;
+    try {
+      const d = JSON.parse(r.body) as { items?: Array<{ id: number; name: string }> };
+      for (const it of d.items ?? []) {
+        if (looksSame(name, it.name)) return { appid: String(it.id), name: it.name };
+      }
+    } catch {
+      /* 解析失败就当没查到 */
     }
-  } catch {
-    /* 解析失败就当没查到 */
   }
   return null;
 }

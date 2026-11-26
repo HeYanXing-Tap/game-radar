@@ -205,6 +205,8 @@ export interface BoardEntry {
   tier: number;
   role: string;
   event_id: number | null;
+  /** 外部事实：Steam 评价数/发售日、B站播放量。卡片和日报都靠它撑证据。 */
+  facts: string | null;
   rank: number | null;
   event_heat: number | null;
   event_sources: number | null;
@@ -221,7 +223,7 @@ export function board(radar: Radar, opts: { days?: number; limit?: number; onlyP
 
   const rows = q<Omit<BoardEntry, 'games' | 'axes'> & { axes_json: string; games_json: string | null }>(
     `SELECT i.id AS item_id, sc.radar, sc.total, sc.verdict, sc.angle, sc.against,
-            sc.axes_json, sc.games_json, sc.scored_at,
+            sc.axes_json, sc.games_json, sc.scored_at, sc.facts,
             COALESCE(i.title_zh, i.title) AS title, i.url,
             COALESCE(i.summary_zh, i.summary) AS summary,
             i.image, i.published_at, i.event_id, i.heat_json,
