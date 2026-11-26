@@ -122,9 +122,9 @@ async function main(): Promise<void> {
       const ignorePrescreen = has('all');
       const redo = has('redo');
       if (radar === 'topic' || radar === 'both')
-        out.topic = await scorePending({ radar: 'topic', limit, days, ignorePrescreen, redo });
+        out.topic = await scorePending({ radar: 'topic', limit: limitOf('topic'), days, ignorePrescreen, redo });
       if (radar === 'game' || radar === 'both')
-        out.game = await scorePending({ radar: 'game', limit, days, ignorePrescreen, redo });
+        out.game = await scorePending({ radar: 'game', limit: limitOf('game'), days, ignorePrescreen, redo });
       recordRun('score', started, { ...out, llm: stats });
       return;
     }
@@ -151,7 +151,10 @@ async function main(): Promise<void> {
 
     case 'run': {
       const started = nowIso();
-      const limit = Number(flag('limit') ?? 200);
+      // 两个雷达分开给预算：选题每天候选几百条，重点游戏只有几十条。
+      // 共用一个 limit 会让一边吃光另一边（之前重点游戏 0 条就有这个原因）。
+      const limitFlag = flag('limit') ? Number(flag('limit')) : null;
+      const limitOf = (r: Radar) => limitFlag ?? (r === 'topic' ? 240 : 180);
       log('1/8 同步信源');
       syncSources();
       log('2/8 抓取媒体与热榜');
