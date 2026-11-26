@@ -36,7 +36,7 @@ export function exportStatic(): Record<string, number> {
 
   const counts: Record<string, number> = {};
 
-  for (const days of [1, 3, 7]) {
+  for (const days of [1, 3, 7, 14]) {
     for (const radar of ['topic', 'game'] as Radar[]) {
       // 导出时把「没过门槛」的也带上，并算好 pass，让网页自己决定收不收。
       // 否则作品队列常常只有两三条，看着像坏了。
@@ -47,7 +47,7 @@ export function exportStatic(): Record<string, number> {
         pass: e.total >= thresholdFor(radar, e.tier),
       }));
       write(`${radar}-${days}.json`, { radar, days, entries });
-      if (days === 3) counts[radar] = entries.filter((e) => e.pass).length;
+      if (days === (radar === 'game' ? 14 : 3)) counts[radar] = entries.filter((e) => e.pass).length;
     }
   }
 

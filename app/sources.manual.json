@@ -75,6 +75,23 @@
         "maxItems": 60
       },
       "note": "补「媒体没写、但 B 站几十万播放」的选题母矿：全站热门榜只覆盖前 100 条，垂类 10–50 万播放的视频进不来，而人工选题会的 A 级题恰恰在这里（如「化学滴定」「游戏开发者太把数学当回事」）。走 wbi 签名搜索，order=click + pubtime 时间窗，按播放量排序后按关键词取头部；要求关键词出现在标题/标签/UP 主名里，过滤 <2 分钟的搬运切片。tier 2：UP 主观点不是官方信源。判重走 bvid 归一化 URL。"
+    },
+    {
+      "id": "reddit_r_games",
+      "name": "Reddit r/games",
+      "role": "community",
+      "region": "global",
+      "type": "rss",
+      "url": "https://www.reddit.com/r/games/.rss",
+      "tier": 2,
+      "enabled": false,
+      "intervalMin": 60,
+      "headers": {
+        "User-Agent": "game-radar/0.1 (by tap-editor)",
+        "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
+      },
+      "adapter": {},
+      "note": "已停用（2026-11-26）：Reddit 对无登录访问全面关闭——.rss 返回 404、hot.json 403、old.reddit 302 跳登录。换 UA 无效，公共 redlib 镜像全部不可达。恢复方式：等 Reddit 放开或申请 OAuth（需注册 app + 走授权码流程）。"
     }
   ]
 }

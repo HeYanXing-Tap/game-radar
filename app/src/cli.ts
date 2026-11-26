@@ -133,12 +133,12 @@ async function main(): Promise<void> {
       log('2/8 抓取媒体与热榜');
       const c = await collect(has('force'));
       log('3/8 Steam 发现（媒体不会写的小体量作品）');
-      const dc = await discoverSteam({ newCount: 40, comingCount: 25, demoCount: 25 });
+      const dc = await discoverSteam({ newCount: 60, comingCount: 40, demoCount: 40 });
       log('4/8 聚簇');
       const cl = await cluster();
       log('5/8 预筛（标题粗排，便宜）');
       const pt = await prescreenQueue('topic', { days: 2 });
-      const pg = await prescreenQueue('game', { days: 2 });
+      const pg = await prescreenQueue('game', { days: 3 });
       log('6/8 翻译英文标题');
       const tr = await translatePending({ limit: 300 });
       log('7/8 细评（五轴打分，只打过线的）');
@@ -186,7 +186,7 @@ async function main(): Promise<void> {
         console.log(`  ${s.name.padEnd(18)} ${String(s.n).padStart(5)} 条${flagTxt}`);
       }
       const passing: Record<string, number> = {};
-      for (const r of ['topic', 'game'] as Radar[]) passing[r] = board(r, { days: 3, limit: 200 }).length;
+      for (const r of ['topic', 'game'] as Radar[]) passing[r] = board(r, { days: r === 'game' ? 14 : 3, limit: 200 }).length;
       console.log(`\n过门槛：选题 ${passing.topic} 条，作品 ${passing.game} 条`);
       console.log('');
       return;

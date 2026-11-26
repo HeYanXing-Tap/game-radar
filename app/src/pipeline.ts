@@ -232,10 +232,13 @@ export function board(radar: Radar, opts: { days?: number; limit?: number; onlyP
      LEFT JOIN prescreen ps ON ps.item_id = i.id AND ps.radar = sc.radar
      WHERE sc.radar = ? AND COALESCE(i.published_at, i.fetched_at) >= ?
        AND COALESCE(ps.related, '') <> 'off'
+       -- 选题素材（B站 UP 主视频等）不进重点游戏队列
+       AND (? = 'topic' OR i.topic_only = 0)
      ORDER BY sc.total DESC
      LIMIT 400`,
     radar,
-    new Date(Date.now() - days * 86_400_000).toISOString()
+    new Date(Date.now() - days * 86_400_000).toISOString(),
+    radar
   );
 
   const heatMap = new Map<number, { heat: number; sources: number }>();

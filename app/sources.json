@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-13T10:22:31.720Z",
+  "updatedAt": "2026-11-26T07:26:51.028Z",
   "note": "信源配置。改这里不用改代码。tier 3=一手官方，2=准一手，1=二手聚合。格式说明见 docs/sources.md",
   "sources": [
     {
@@ -382,14 +382,14 @@
       "type": "rss",
       "url": "https://www.reddit.com/r/games/.rss",
       "tier": 2,
-      "enabled": true,
+      "enabled": false,
       "intervalMin": 60,
       "headers": {
         "User-Agent": "game-radar/0.1 (by tap-editor)",
         "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
       },
       "adapter": {},
-      "note": "★ 必须用 .rss，hot.json 已被 Reddit 网络层封死（403 blocked by network security，换 UA 无效）。.rss 单次 25 条，Atom，带 updated 时间。UA 必须是自定义的 game-radar/0.1，浏览器 UA 反而 403。列表顺序=热榜位次，当热度用；但 .rss 不返回 score/comments 数值。短时间重复请求会 429，间隔不要低于 60 分钟。"
+      "note": "已停用（2026-11-26）：Reddit 对无登录访问全面关闭——.rss 返回 404、hot.json 403、old.reddit 302 跳登录。换 UA 无效，公共 redlib 镜像全部不可达。恢复方式：等 Reddit 放开或申请 OAuth（需注册 app + 走授权码流程）。"
     },
     {
       "id": "baidu-hot",

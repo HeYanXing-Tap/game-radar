@@ -114,6 +114,9 @@ export async function fetchSource(
           publishedAt: v.publishedAt,
           lang: 'zh',
           heat: { plays: v.plays, comments: v.comments },
+          // B站 UP 主的视频是「选题素材」（UP 主挖到了什么），不是「引进标的」。
+          // 打上 topic_only，就不会混进重点游戏队列——那里要的是能打电话谈的作品。
+          topicOnly: true,
         });
       }
     }

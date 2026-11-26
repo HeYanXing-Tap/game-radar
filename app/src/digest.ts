@@ -37,7 +37,7 @@ export interface Digest {
 export async function buildDigest(dateStr?: string): Promise<Digest> {
   const date = dateStr ?? today();
   const topic = board('topic', { days: 1, limit: 12 });
-  const game = board('game', { days: 3, limit: 12 });
+  const game = board('game', { days: 14, limit: 12 });
   const hot = computeHeat().slice(0, 8);
 
   let intro = '';

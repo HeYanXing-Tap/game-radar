@@ -149,6 +149,11 @@ ensureColumn('scores', 'facts', 'TEXT');
 ensureColumn('games', 'bili_json', 'TEXT');
 ensureColumn('games', 'bili_at', 'TEXT');
 
+// 老数据的 topic_only 补标：B站 UP 主视频是选题素材，不进重点游戏队列。
+db.exec(`UPDATE items SET topic_only = 1
+         WHERE topic_only = 0
+           AND source_id IN (SELECT id FROM sources WHERE type = 'bili')`);
+
 /** ---------- 小工具 ---------- */
 
 export function nowIso(): string {
