@@ -160,7 +160,7 @@ async function main(): Promise<void> {
       log('2/8 抓取媒体与热榜');
       const c = await collect(has('force'));
       log('3/8 Steam 发现（媒体不会写的小体量作品）');
-      const dc = await discoverSteam({ newCount: 60, comingCount: 40, demoCount: 40, globalCount: 20 });
+      const dc = await discoverSteam({ newCount: 60, comingCount: 40, demoCount: 40 });
       log('4/8 聚簇');
       const cl = await cluster();
       log('5/8 预筛（标题粗排，便宜）');

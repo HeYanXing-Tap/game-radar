@@ -36,6 +36,12 @@ jobs:
           LLM_MAX_CALLS_PER_RUN: '950'
         run: node --disable-warning=ExperimentalWarning src/cli.ts run
 
+      # 编辑部在 Slack「重点游戏发掘与记录」里圈过的作品，云端读不到 Slack（要登录态），
+      # 所以把名单存进仓库，每天让机器按名字去 Steam 查一遍，缺的就补进库。
+      - name: 补录编辑部圈过的作品
+        working-directory: app
+        run: node --disable-warning=ExperimentalWarning src/cli.ts backfill --namesfile=slack-games.txt
+
       - name: 导出静态数据
         working-directory: app
         run: node --disable-warning=ExperimentalWarning src/cli.ts export

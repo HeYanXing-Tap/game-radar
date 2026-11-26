@@ -100,7 +100,7 @@ async function details(appid: string): Promise<Details | null> {
       priceYuan: typeof (d.price_overview as { final?: number } | undefined)?.final === 'number'
         ? Math.round((d.price_overview as { final: number }).final / 100)
         : null,
-      chinese: /schinese|简体中文/i.test(langs),
+      chinese: /schinese|简体中文|Simplified Chinese/i.test(langs),
     };
   } catch {
     return null;
@@ -185,18 +185,16 @@ export interface DiscoverResult {
   new: number;
   coming: number;
   demo: number;
-  global: number;
   inserted: number;
 }
 
 export async function discoverSteam(
-  opts: { newCount?: number; comingCount?: number; demoCount?: number; globalCount?: number } = {}
+  opts: { newCount?: number; comingCount?: number; demoCount?: number } = {}
 ): Promise<DiscoverResult> {
   ensureSource();
   const nNew = opts.newCount ?? 50;
   const nComing = opts.comingCount ?? 30;
   const nDemo = opts.demoCount ?? 30;
-  const nGlobal = opts.globalCount ?? 20;
 
   const LANG = 'supportedlang=schinese&cc=cn';
 
@@ -206,7 +204,7 @@ export async function discoverSteam(
     ['demo', `sort_by=Released_DESC&category1=998&${LANG}`, nDemo, '带Demo'],
   ];
 
-  const result: DiscoverResult = { new: 0, coming: 0, demo: 0, global: 0, inserted: 0 };
+  const result: DiscoverResult = { new: 0, coming: 0, demo: 0, inserted: 0 };
   const all: RawItem[] = [];
   for (const [key, params, want, tag] of lists) {
     const items = await scanList(params, want, tag);
@@ -217,16 +215,6 @@ export async function discoverSteam(
     all.push(...items);
   }
 
-  // 第四路：全球新发售，不看语言。要的是「海外已经在卖、中文版还没有」的作品——
-  // 那正是引进最理想的窗口（等中文版有了，代理权也谈完了）。
-  // 用「评价数 ≥ 150」当体量门槛，挡掉刚上架没人玩的。
-  const globalItems = await scanList(`sort_by=Released_DESC&cc=cn`, nGlobal, '全球新发售·无中文', {
-    requireChinese: false,
-    minReviews: 150,
-  }).then((list) => list.filter((it) => /暂不支持中文/.test(it.summary ?? '')));
-  result.global = globalItems.length;
-  log(`· Steam 全球新发售（暂无中文）：新增 ${globalItems.length} 条`);
-  all.push(...globalItems);
 
   // 同一轮里三个列表会重叠，saveItems 会按 url_key 去重，这里先合并省一次写入
   const byUrl = new Map<string, RawItem>();
