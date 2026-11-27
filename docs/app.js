@@ -165,63 +165,6 @@ function mustKnowStrip(rows) {
   </section>`;
 }
 
-/**
- * 同一主体最多占 2 张卡，其余折进「另外 N 条」——不降序，只省版面。
- * 主体名用「全局出现次数最多的那个游戏名」来定：GTA6 / 侠盗猎车手6 / Grand Theft Auto VI
- * 是同一件事的三种写法，按频次取其一就能自然并到一起。
- */
-function layout(entries) {
-  // 主体取第一条游戏名（模型按重要度排过序）。不要把「顺便提到 GTA6」的条目也算进去，
-  // 否则《黄金矿工》这种自己的故事会被并到 GTA6 的折叠里。
-  const subjectOf = (e) => (e.games && e.games[0]) || null;
-  // 只有「同一主体出现 4 次以上」才值得折，折 1 条纯属添乱。
-  const total = new Map();
-  for (const e of entries) {
-    const k = subjectOf(e);
-    if (k) total.set(k, (total.get(k) || 0) + 1);
-  }
-  const foldable = new Set([...total].filter(([, n]) => n >= 4).map(([k]) => k));
-
-  const seen = new Map();
-  const folded = new Map();
-  const seq = [];
-  for (const e of entries) {
-    const k = subjectOf(e);
-    if (!k || !foldable.has(k)) {
-      seq.push({ type: 'card', e });
-      continue;
-    }
-    const n = (seen.get(k) || 0) + 1;
-    seen.set(k, n);
-    if (n <= 2) seq.push({ type: 'card', e, k });
-    else {
-      if (!folded.has(k)) folded.set(k, []);
-      folded.get(k).push(e);
-    }
-  }
-  const res = [];
-  for (let i = 0; i < seq.length; i += 1) {
-    res.push(seq[i]);
-    const k = seq[i].k;
-    if (!k || !folded.has(k)) continue;
-    const next = seq[i + 1];
-    if (!next || next.type !== 'card' || next.k !== k) res.push({ type: 'fold', k, items: folded.get(k) });
-  }
-  return res;
-}
-
-function foldBlock(f) {
-  return `<details class="fold">
-    <summary>《${esc(f.k)}》另有 ${f.items.length} 条</summary>
-    <div class="fold-body">${f.items
-      .map(
-        (e) => `<a class="fold-row" href="${esc(e.url)}" target="_blank" rel="noopener">
-        <b>${e.total}</b><span>${esc(e.title)}</span><em>${esc(e.source_name)}</em></a>`
-      )
-      .join('')}</div>
-  </details>`;
-}
-
 async function renderBoard(radar) {
   const el = $(`#view-${radar}`);
   el.innerHTML = '<div class="empty">载入中…</div>';
@@ -254,8 +197,8 @@ async function renderBoard(radar) {
   el.innerHTML =
     mk +
     head +
-    layout(list)
-      .map((it) => (it.type === 'fold' ? foldBlock(it) : card(it.e, it.e.pass !== false)))
+    list
+      .map((e) => card(e, e.pass !== false))
       .join('');
 }
 
