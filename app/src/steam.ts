@@ -111,19 +111,25 @@ async function searchApp(name: string): Promise<{ appid: string; name: string } 
   }
   const uniq = [...new Set(queries)].filter((x) => x.length >= 2);
   for (const q of uniq) {
-    const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(q)}&cc=cn&l=schinese`;
-    const r = await politeFetch(url);
-    if (!r.ok) continue;
-    try {
-      const d = JSON.parse(r.body) as { items?: Array<{ id: number; name: string }> };
-      for (const it of d.items ?? []) {
-        if (looksSame(name, it.name)) return { appid: String(it.id), name: it.name };
-      }
-    } catch {
-      /* 解析失败就当没查到 */
+    const hits = await searchRaw(q);
+    for (const it of hits) {
+      if (looksSame(name, it.name)) return { appid: it.appid, name: it.name };
     }
   }
   return null;
+}
+
+/** 单次 Steam 商店搜索，原样返回前 8 条（名字核对交给调用方）。 */
+async function searchRaw(term: string): Promise<Array<{ appid: string; name: string }>> {
+  const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(term)}&cc=cn&l=schinese`;
+  const r = await politeFetch(url);
+  if (!r.ok) return [];
+  try {
+    const d = JSON.parse(r.body) as { items?: Array<{ id: number; name: string }> };
+    return (d.items ?? []).slice(0, 8).map((it) => ({ appid: String(it.id), name: it.name }));
+  } catch {
+    return [];
+  }
 }
 
 async function appDetails(appid: string): Promise<Omit<SteamFacts, 'query' | 'matched' | 'appid' | 'fetchedAt'>> {
@@ -164,7 +170,41 @@ export function mentionedInTitle(name: string, title: string): boolean {
   return norm(title).includes(n);
 }
 
-export async function lookupGame(name: string, opts: { fresh?: boolean } = {}): Promise<SteamFacts> {
+/**
+ * 从文章里抠出英文作品名去 Steam 搜。
+ *
+ * 为什么需要：「杀戮尖塔2」在 Steam 上叫「Slay the Spire 2」，商店页没有中文名，
+ * 拿中文去搜永远是 0 条。但文章正文里往往直接写着英文名——那就用文章自己的字去查，
+ * 并且要求搜到的名字**在正文里原样出现过**，这样不会认错人。
+ */
+async function searchByContext(context: string): Promise<{ appid: string; name: string } | null> {
+  const text = norm(context);
+  if (!text) return null;
+  // 抠出连续的拉丁片段（书名号、竖线会被 norm 变成空格），取 2–4 个词、4–40 个字符的
+  const runs = text.match(/[a-z][a-z0-9'’:!&.\-]*(?: [a-z0-9'’:!&.\-]+){0,5}/g) ?? [];
+  // 一段连续英文里，作品名往往只是开头的两三个词（"slay the spire 2 beta patch notes"），
+  // 所以每个片段再各取前 2/3/4 个词的短版本一起试。
+  const expanded: string[] = [];
+  for (const run of runs) {
+    const words = run.trim().split(' ').filter(Boolean);
+    for (const n of [4, 3, 2]) {
+      if (words.length >= n) expanded.push(words.slice(0, n).join(' '));
+    }
+    expanded.push(run.trim());
+  }
+  const cands = [...new Set(expanded.filter((x) => x.length >= 4 && x.length <= 40))].slice(0, 6);
+  for (const cand of cands) {
+    const hits = await searchRaw(cand);
+    for (const h of hits.slice(0, 5)) {
+      const n = norm(h.name);
+      // 只认「正文里原样出现过」的结果
+      if (n.length >= 4 && text.includes(n) && !DERIVATIVE.test(h.name)) return h;
+    }
+  }
+  return null;
+}
+
+export async function lookupGame(name: string, opts: { fresh?: boolean; context?: string } = {}): Promise<SteamFacts> {
   const cached = q<{ steam_appid: string | null; meta_json: string | null; last_at: string | null }>(
     'SELECT steam_appid, meta_json, last_at FROM games WHERE name = ?',
     name
@@ -180,7 +220,8 @@ export async function lookupGame(name: string, opts: { fresh?: boolean } = {}): 
   }
 
   const now = new Date().toISOString();
-  const hit = await searchApp(name);
+  let hit = await searchApp(name);
+  if (!hit && opts.context) hit = await searchByContext(opts.context);
   const facts: SteamFacts = hit
     ? { query: name, matched: hit.name, appid: hit.appid, ...(await appDetails(hit.appid)), fetchedAt: now }
     : { query: name, matched: null, appid: null, releaseDate: null, comingSoon: false, reviews: null, priceYuan: null, fetchedAt: now };

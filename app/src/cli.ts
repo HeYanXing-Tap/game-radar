@@ -98,8 +98,14 @@ async function main(): Promise<void> {
       const radar = (flag('radar') ?? 'both') as Radar | 'both';
       const days = Number(flag('days') ?? 2);
       const limit = Number(flag('limit') ?? 400);
-      if (radar === 'topic' || radar === 'both') await prescreenQueue('topic', { days, limit });
-      if (radar === 'game' || radar === 'both') await prescreenQueue('game', { days, limit });
+      // --ids= / --idsfile=：只重跑指定条目（补数据用，比如给老记录补 ge 英文原名）
+      const idsRaw = flag('ids') ?? (flag('idsfile') ? readFileSync(flag('idsfile')!, 'utf8') : null);
+      const ids = idsRaw
+        ? idsRaw.split(/[\s,]+/).map(Number).filter((n) => Number.isInteger(n) && n > 0)
+        : [];
+      const opts = ids.length ? { ids } : { days, limit };
+      if (radar === 'topic' || radar === 'both') await prescreenQueue('topic', opts);
+      if (radar === 'game' || radar === 'both') await prescreenQueue('game', opts);
       return;
     }
 

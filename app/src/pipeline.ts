@@ -112,11 +112,13 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
         const nameOk = row.game_name.length <= 40 && !/[见报道原文？?]/.test(row.game_name);
         if (nameOk) {
           try {
-            let f = await lookupGame(row.game_name);
+            // context 让查询能从正文里抠英文名去搜（「杀戮尖塔2」在 Steam 上叫 Slay the Spire 2）
+            const ctx = `${row.title} ${row.summary ?? ''}`;
+            let f = await lookupGame(row.game_name, { context: ctx });
             // 中文名在 Steam 上搜不到时，用预筛给的英文原名再试一次
             // （「杀戮尖塔2」在商店里就叫「Slay the Spire 2」，中文名搜是 0 结果）。
             if (!f.appid && row.game_alt && row.game_alt !== row.game_name) {
-              const alt = await lookupGame(row.game_alt);
+              const alt = await lookupGame(row.game_alt, { context: ctx });
               if (alt.appid) f = alt;
             }
             parts.push(factsLine(f));

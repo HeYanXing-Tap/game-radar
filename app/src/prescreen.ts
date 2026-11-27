@@ -30,7 +30,7 @@ interface Row {
 }
 
 interface BatchResp {
-  scores?: Array<{ i: number; s: number; why?: string; r?: string; g?: string }>;
+  scores?: Array<{ i: number; s: number; why?: string; r?: string; g?: string; ge?: string }>;
 }
 
 /**
@@ -40,7 +40,7 @@ interface BatchResp {
  */
 export async function prescreenQueue(
   radar: Radar,
-  opts: { days?: number; limit?: number } = {}
+  opts: { days?: number; limit?: number; ids?: number[] } = {}
 ): Promise<{ screened: number; calls: number; failed: number }> {
   if (!hasLlm()) {
     log(`[预筛/${radar}] 未配置 LLM_API_KEY，跳过`);
@@ -49,22 +49,33 @@ export async function prescreenQueue(
   const days = opts.days ?? 2;
   const limit = opts.limit ?? 400;
 
-  const rows = q<Row>(
-    `SELECT i.id, i.title, i.summary, s.name AS source_name
-     FROM items i
-     JOIN sources s ON s.id = i.source_id
-     LEFT JOIN prescreen p ON p.item_id = i.id AND p.radar = ?
-     LEFT JOIN scores sc ON sc.item_id = i.id AND sc.radar = ?
-     WHERE (p.id IS NULL OR p.related IS NULL OR (? = 'game' AND p.game_name IS NULL)) AND i.is_dup = 0
-       AND COALESCE(i.published_at, i.fetched_at) >= ?
-     ORDER BY COALESCE(i.published_at, i.fetched_at) DESC
-     LIMIT ?`,
-    radar,
-    radar,
-    radar,
-    new Date(Date.now() - days * 86_400_000).toISOString(),
-    limit
-  );
+  // --ids 是补数据用的入口：只重跑指定的条目（比如给老记录补 ge 英文名），
+  // 不按时间窗和「有没有筛过」过滤，所以能反复对同一批跑。
+  const ids = (opts.ids ?? []).filter((n) => Number.isInteger(n) && n > 0);
+  const rows = ids.length
+    ? q<Row>(
+        `SELECT i.id, i.title, i.summary, s.name AS source_name
+         FROM items i JOIN sources s ON s.id = i.source_id
+         WHERE i.id IN (${ids.map(() => '?').join(',')})
+         ORDER BY i.id`,
+        ...ids
+      )
+    : q<Row>(
+        `SELECT i.id, i.title, i.summary, s.name AS source_name
+         FROM items i
+         JOIN sources s ON s.id = i.source_id
+         LEFT JOIN prescreen p ON p.item_id = i.id AND p.radar = ?
+         LEFT JOIN scores sc ON sc.item_id = i.id AND sc.radar = ?
+         WHERE (p.id IS NULL OR p.related IS NULL OR (? = 'game' AND p.game_name IS NULL)) AND i.is_dup = 0
+           AND COALESCE(i.published_at, i.fetched_at) >= ?
+         ORDER BY COALESCE(i.published_at, i.fetched_at) DESC
+         LIMIT ?`,
+        radar,
+        radar,
+        radar,
+        new Date(Date.now() - days * 86_400_000).toISOString(),
+        limit
+      );
 
   if (!rows.length) {
     log(`[预筛/${radar}] 没有待筛条目`);
