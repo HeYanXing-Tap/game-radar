@@ -174,12 +174,20 @@ function layout(entries) {
   // 主体取第一条游戏名（模型按重要度排过序）。不要把「顺便提到 GTA6」的条目也算进去，
   // 否则《黄金矿工》这种自己的故事会被并到 GTA6 的折叠里。
   const subjectOf = (e) => (e.games && e.games[0]) || null;
+  // 只有「同一主体出现 4 次以上」才值得折，折 1 条纯属添乱。
+  const total = new Map();
+  for (const e of entries) {
+    const k = subjectOf(e);
+    if (k) total.set(k, (total.get(k) || 0) + 1);
+  }
+  const foldable = new Set([...total].filter(([, n]) => n >= 4).map(([k]) => k));
+
   const seen = new Map();
   const folded = new Map();
   const seq = [];
   for (const e of entries) {
     const k = subjectOf(e);
-    if (!k) {
+    if (!k || !foldable.has(k)) {
       seq.push({ type: 'card', e });
       continue;
     }
