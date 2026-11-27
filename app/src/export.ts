@@ -7,6 +7,7 @@ import { computeHeat } from './cluster.ts';
 import { getDigest, listDigests } from './digest.ts';
 import { allSources } from './sources.ts';
 import { exec, q } from './db.ts';
+import { buildAliasMap, canonicalize } from './alias.ts';
 import type { Radar } from './types.ts';
 
 const OUT = join(APP_ROOT, 'public', 'data');
@@ -36,14 +37,18 @@ export function exportStatic(): Record<string, number> {
 
   const counts: Record<string, number> = {};
 
-  for (const days of [1, 3, 7, 14]) {
-    for (const radar of ['topic', 'game'] as Radar[]) {
+  for (const radar of ['topic', 'game'] as Radar[]) {
+    // 别名表按雷达各自从 14 天窗口推断一次，四个时间窗共用，
+    // 免得同一天的数据在不同窗口里被并成不同的名字。
+    const aliasMap = buildAliasMap(board(radar, { days: 14, limit: 400, onlyPassing: false }));
+    for (const days of [1, 3, 7, 14]) {
       // 导出时把「没过门槛」的也带上，并算好 pass，让网页自己决定收不收。
       // 否则作品队列常常只有两三条，看着像坏了。
       const entries = board(radar, { days, limit: 80, onlyPassing: false })
         .filter((e) => e.total >= 55)
         .map((e) => ({
         ...e,
+        games: canonicalize(e.games, aliasMap),
         pass: e.total >= thresholdFor(radar, e.tier),
       }));
       write(`${radar}-${days}.json`, { radar, days, entries });
