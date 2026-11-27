@@ -142,11 +142,26 @@ async function getMustKnow() {
   return state.mustknow;
 }
 
+const MK_KEY = 'radar.mkOpen';
+function mkIsOpen() {
+  try {
+    return localStorage.getItem(MK_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
 function mustKnowStrip(rows) {
   if (!rows.length) return '';
+  const open = mkIsOpen();
   return `
-  <section class="mk">
-    <div class="mk-head"><b>今日必知</b><span>全网都在说 · 不看分数 · 只要还在讨论就一直在这</span></div>
+  <section class="mk${open ? '' : ' mk-collapsed'}" id="mk">
+    <button class="mk-head" type="button" id="mk-toggle" aria-expanded="${open}">
+      <b>今日必知</b>
+      <span class="mk-sub">${rows.length} 条 · 全网都在说 · 不看分数</span>
+      <span class="mk-chev">${open ? '收起 ▴' : '展开 ▾'}</span>
+    </button>
+    <div class="mk-body">
     ${rows
       .map((h) => {
         const days = Math.max(1, Math.round((new Date(h.last_at) - new Date(h.first_at)) / 86400000));
@@ -158,6 +173,7 @@ function mustKnowStrip(rows) {
       </a>`;
       })
       .join('')}
+    </div>
   </section>`;
 }
 
@@ -345,6 +361,19 @@ document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, select, textarea')) return;
   const map = { 1: 'topic', 2: 'game', 3: 'hot', 4: 'digest', 5: 'sources' };
   if (map[e.key]) switchView(map[e.key]);
+});
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('#mk-toggle');
+  if (!t) return;
+  const sec = t.closest('.mk');
+  const open = sec.classList.toggle('mk-collapsed') === false;
+  t.setAttribute('aria-expanded', String(open));
+  const chev = t.querySelector('.mk-chev');
+  if (chev) chev.textContent = open ? '收起 ▴' : '展开 ▾';
+  try {
+    localStorage.setItem(MK_KEY, open ? '1' : '0');
+  } catch {}
 });
 
 document.addEventListener('click', async (e) => {
