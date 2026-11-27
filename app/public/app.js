@@ -125,23 +125,6 @@ function card(e, passing) {
   </article>`;
 }
 
-/**
- * 「今日必知」= 热度榜里 3 家以上同时在说的头部事件。
- * 这一栏故意不看分数：打分层评的是「值不值得做」，而有些事是「不做也得知道」。
- * 热度是滚动的（48 小时半衰、7 天窗口），所以只要还在讨论就会一直挂在上面。
- */
-async function getMustKnow() {
-  if (state.mustknow) return state.mustknow;
-  // 优先读导出时算好的 mustknow.json（按「几家在说」排，不受 48 小时热度衰减影响）
-  try {
-    state.mustknow = await api(DATA('mustknow'));
-  } catch {
-    const rows = await getHot().catch(() => []);
-    state.mustknow = rows.filter((h) => h.sources >= 3).slice(0, 6);
-  }
-  return state.mustknow;
-}
-
 const MK_KEY = 'radar.mkOpen';
 function mkIsOpen() {
   try {
@@ -154,25 +137,30 @@ function mkIsOpen() {
 function mustKnowStrip(rows) {
   if (!rows.length) return '';
   const open = mkIsOpen();
+  const top = rows.filter((h) => h.sources >= 3).slice(0, 8);
+  const usedIds = new Set(top.map((h) => h.event_id));
+  const more = rows.filter((h) => !usedIds.has(h.event_id)).slice(0, 24);
+  const rowOf = (h, showSources) => {
+    const days = Math.max(1, Math.round((new Date(h.last_at) - new Date(h.first_at)) / 86400000));
+    const names = String(h.source_names || '').split(' / ').slice(0, 3).join(' / ');
+    const lead = showSources ? h.sources : h.heat.toFixed(0);
+    return `<a class="mk-row"${h.url ? ` href="${esc(h.url)}" target="_blank" rel="noopener"` : ''}>
+        <span class="mk-s">${lead}</span>
+        <span class="mk-t">${esc(h.title)}</span>
+        <span class="mk-m">${esc(names)}${days > 1 ? ` · 已持续 ${days} 天` : ''}</span>
+      </a>`;
+  };
   return `
   <section class="mk${open ? '' : ' mk-collapsed'}" id="mk">
     <button class="mk-head" type="button" id="mk-toggle" aria-expanded="${open}">
       <b>今日必知</b>
-      <span class="mk-sub">${rows.length} 条 · 全网都在说 · 不看分数</span>
+      <span class="mk-sub">${top.length} 条多家在说 · 另有 ${more.length} 条单一来源在涨</span>
       <span class="mk-chev">${open ? '收起 ▴' : '展开 ▾'}</span>
     </button>
     <div class="mk-body">
-    ${rows
-      .map((h) => {
-        const days = Math.max(1, Math.round((new Date(h.last_at) - new Date(h.first_at)) / 86400000));
-        const names = String(h.source_names || '').split(' / ').slice(0, 3).join(' / ');
-        return `<a class="mk-row"${h.url ? ` href="${esc(h.url)}" target="_blank" rel="noopener"` : ''}>
-        <span class="mk-s">${h.sources}</span>
-        <span class="mk-t">${esc(h.title)}</span>
-        <span class="mk-m">${esc(names)}${days > 1 ? ` · 已持续 ${days} 天` : ''}</span>
-      </a>`;
-      })
-      .join('')}
+      <div class="mk-note">左边数字＝几家在说（3 家以上算「全网在说」）；下面第二部分按热度排，数字是热度值</div>
+      ${top.map((h) => rowOf(h, true)).join('')}
+      ${more.length ? `<div class="mk-div">单一来源，但热度在涨</div>${more.map((h) => rowOf(h, false)).join('')}` : ''}
     </div>
   </section>`;
 }
@@ -189,7 +177,7 @@ async function renderBoard(radar) {
   if (!data.entries.filter((e) => state.all || e.pass !== false).length) {
     const st = await getStats().catch(() => null);
     const noModel = st && typeof st.scored === 'number' && st.scored === 0;
-    const mk0 = radar === 'topic' ? mustKnowStrip(await getMustKnow()) : '';
+    const mk0 = radar === 'topic' ? mustKnowStrip(await getHot()) : '';
     el.innerHTML = noModel
       ? mk0 + `<div class="empty">
           <strong>打分层还没跑起来。</strong><br /><br />
@@ -209,32 +197,8 @@ async function renderBoard(radar) {
     radar === 'topic'
       ? `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按选题价值排序 · 外溢能力权重最高<br /><span style="color:var(--mute)">这一栏回答的是：今天有什么值得写成稿子／视频</span></div>`
       : `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按引进价值排序 · 品质与商业可行性权重最高<br /><span style="color:var(--mute)">这一栏回答的是：今天有什么游戏值得谈代理／上架／合作</span></div>`;
-  const mk = radar === 'topic' ? mustKnowStrip(await getMustKnow()) : '';
+  const mk = radar === 'topic' ? mustKnowStrip(await getHot()) : '';
   el.innerHTML = mk + head + list.map((e) => card(e, e.pass !== false)).join('');
-}
-
-async function renderHot() {
-  const el = $('#view-hot');
-  el.innerHTML = '<div class="empty">载入中…</div>';
-  const rows = await getHot();
-  if (!rows.length) {
-    el.innerHTML = '<div class="empty">还没有事件。跑 <code>npm run collect && npm run score</code></div>';
-    return;
-  }
-  el.innerHTML = `
-    <div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">
-      热度 = 48 小时内独立来源数加权求和 · 24 小时前对半折 · 同一媒体发十篇只算一次
-    </div>
-    ${rows
-      .map(
-        (h) => `
-      <div class="hotrow">
-        <div class="h">${h.heat.toFixed(1)}</div>
-        <div class="t">${esc(h.title)}${h.heat_6h > 0 ? `<span class="up">↑ 近6h +${h.heat_6h}</span>` : ''}</div>
-        <div class="s">${h.sources} 源<br />${relTime(h.last_at)}</div>
-      </div>`
-      )
-      .join('')}`;
 }
 
 /** 极简 markdown：够渲染我们自己生成的日报就行。 */
@@ -274,17 +238,30 @@ function md(src) {
   return out.join('');
 }
 
-async function renderDigest() {
-  const el = $('#view-digest');
+async function renderArchive() {
+  const el = $('#view-archive');
   el.innerHTML = '<div class="empty">载入中…</div>';
   try {
     const list = await getDigests();
     if (!list.length) {
-      el.innerHTML = '<div class="empty">还没有日报。跑 <code>npm run digest</code> 生成今天的。</div>';
+      el.innerHTML = '<div class="empty">还没有日报。云端每天 8 点会自动生成一份。</div>';
       return;
     }
-    const d = await getDigest(list[0].date);
-    el.innerHTML = `<div class="md">${md(d.markdown || '')}</div>`;
+    const want = state.digestDate || list[0].date;
+    const chips = list
+      .slice(0, 30)
+      .map((d) => `<button class="dchip${d.date === want ? ' on' : ''}" data-date="${esc(d.date)}">${esc(d.date.slice(5))}</button>`)
+      .join('');
+    el.innerHTML = `<div class="dbar">${chips}</div><div class="md" id="dbody">载入中…</div>`;
+    el.querySelectorAll('.dchip').forEach((b) =>
+      b.addEventListener('click', () => {
+        state.digestDate = b.dataset.date;
+        renderArchive();
+      })
+    );
+    const d = await getDigest(want);
+    const body = $('#dbody');
+    if (body) body.innerHTML = md(d.markdown || '');
   } catch (e) {
     el.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
   }
@@ -321,7 +298,7 @@ async function renderSources() {
     </table>`;
 }
 
-const RENDER = { topic: () => renderBoard('topic'), game: () => renderBoard('game'), hot: renderHot, digest: renderDigest, sources: renderSources };
+const RENDER = { topic: () => renderBoard('topic'), game: () => renderBoard('game'), archive: renderArchive, sources: renderSources };
 
 function switchView(v) {
   if (!RENDER[v]) v = 'topic';
@@ -359,7 +336,7 @@ $('#all').addEventListener('change', (e) => {
 
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, select, textarea')) return;
-  const map = { 1: 'topic', 2: 'game', 3: 'hot', 4: 'digest', 5: 'sources' };
+  const map = { 1: 'topic', 2: 'game', 3: 'archive', 4: 'sources' };
   if (map[e.key]) switchView(map[e.key]);
 });
 

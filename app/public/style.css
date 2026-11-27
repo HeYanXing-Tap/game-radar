@@ -191,5 +191,15 @@ td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; color: va
 .mk-s { font-family: var(--mono); font-size: 12px; color: var(--amber); text-align: right; }
 .mk-t { font-size: 13.5px; line-height: 1.45; }
 .mk-m { font-size: 11px; color: var(--mute); font-family: var(--mono); white-space: nowrap; }
+
+.mk-note { padding: 8px 14px 4px; font-size: 11px; color: var(--dim); font-family: var(--mono); }
+.mk-div { padding: 12px 14px 6px; font-size: 11px; color: var(--mute); font-family: var(--mono);
+  border-top: 1px solid var(--line); letter-spacing: .3px; }
+.dbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; }
+.dchip { padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel);
+  color: var(--mute); font-size: 11.5px; font-family: var(--mono); cursor: pointer; }
+.dchip:hover { color: var(--fg); border-color: var(--dim); }
+.dchip.on { color: #0b0d10; background: var(--amber); border-color: var(--amber); font-weight: 600; }
+
 @media (max-width: 720px) { .mk-row { grid-template-columns: 26px 1fr; } .mk-m { grid-column: 2; } }
 .meta .also { color: var(--dim); font-size: 11px; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
