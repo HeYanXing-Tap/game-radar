@@ -203,3 +203,34 @@ td.num { font-family: var(--mono); font-size: 12px; color: var(--mute); }
   .row { grid-template-columns: 44px 1fr; gap: 14px; }
   .row h3 { font-size: 17px; }
   .row.lead h3 { font-size: 21px; }
+}
+
+/* ---------- 重点游戏：封面 + 状态 ---------- */
+.row.game { grid-template-columns: 56px 1fr 168px; gap: 22px; }
+.row.game .cover { padding-top: 3px; }
+.row.game .cover img {
+  display: block; width: 168px; height: auto; border: 1px solid var(--line-2);
+  background: var(--paper-2);
+}
+.row.game h3 { font-weight: 700; color: var(--ink); font-size: 20px; }
+.row.game.lead h3 { font-size: 27px; }
+.row.game .art {
+  margin: 6px 0 0; font-family: var(--mono); font-size: 10.5px; line-height: 1.6;
+  color: var(--dim); overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+}
+
+.stage {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .3px;
+  padding: 1px 6px; border: 1px solid var(--line-2); color: var(--mute);
+}
+.st-coming { color: var(--accent); border-color: #dcc0a8; }
+.st-launch { color: var(--teal); border-color: #b6d3cb; }
+.st-age { color: var(--mute); }
+.st-miss { color: var(--dim); border-style: dashed; }
+
+@media (max-width: 760px) {
+  .row.game { grid-template-columns: 44px 1fr; }
+  .row.game .cover { grid-column: 2; padding-top: 8px; }
+  .row.game .cover img { width: 140px; }
+}

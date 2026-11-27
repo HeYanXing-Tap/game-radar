@@ -95,24 +95,53 @@ async function loadStats() {
   } catch {}
 }
 
-function card(e, passing, lead, prevSrc) {
-  const cls = [passing ? 'pass' : 'fail', lead ? 'lead' : ''].join(' ').trim();
+/** 重点游戏的状态标签：分数说「值不值得谈」，这个说「还来不来得及」。 */
+function stageClass(label) {
+  if (!label) return '';
+  if (label === '尚未发售') return 'st-coming';
+  if (label.indexOf('首发') === 0) return 'st-launch';
+  if (label.indexOf('上线') === 0) return 'st-age';
+  return 'st-miss';
+}
+
+const STEAM_HEADER = (id) => `https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/header.jpg`;
+
+function card(e, passing, lead, prevSrc, radar) {
+  const isGame = radar === 'game';
+  const cls = [passing ? 'pass' : 'fail', lead ? 'lead' : '', isGame ? 'game' : '']
+    .join(' ').replace(/\s+/g, ' ').trim();
   const tierBadge = e.tier === 3 ? '<span class="tier3">一手</span>' : '';
   const heat = e.event_sources > 1 ? `<span>${e.event_sources} 源在说</span>` : '';
   const also = (e.also ?? 1) > 1 ? `<span class="also">同事件另有 ${e.also - 1} 篇</span>` : '';
+  const stage = isGame && e.stage_label
+    ? `<span class="stage ${stageClass(e.stage_label)}">${esc(e.stage_label)}</span>` : '';
+
+  const headline = isGame ? (e.games && e.games[0]) || e.title : e.title;
+  // 重点游戏把游戏名当标题、原文章标题退成一行出处；选题则相反。
+  const sub = isGame && (e.games || []).length ? `<p class="art">${esc(e.title)}</p>` : '';
+
+  // 封面列永远占位，保证所有行的正文宽度一致；图挂了就把这一格留空。
+  const cover = isGame
+    ? `<div class="cover">${e.appid ? `<img src="${STEAM_HEADER(e.appid)}" alt="" loading="lazy"
+         onerror="this.closest('.cover').classList.add('nocover');this.remove()" />` : ''}</div>`
+    : '';
+
   return `
   <article class="row ${cls}" data-id="${e.item_id}">
     <div class="s">${Math.round(e.total)}</div>
     <div class="b">
-      <h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a></h3>
+      <h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(headline)}</a></h3>
       ${e.verdict ? `<p class="v">${esc(e.verdict)}</p>` : ''}
       <div class="m">
+        ${stage}
         ${e.source_name && e.source_name !== prevSrc ? `<span class="src">${esc(e.source_name)}${tierBadge}</span>` : ''}
         <span>${e.published_at ? relTime(e.published_at) : e.rank ? `榜 #${e.rank}` : '时间未知'}</span>
         ${heat}${also}
       </div>
+      ${sub}
       ${lead && e.angle ? `<p class="a">${esc(e.angle)}</p>` : ''}
     </div>
+    ${cover}
   </article>`;
 }
 
@@ -189,7 +218,7 @@ async function renderBoard(radar) {
     mk +
     head +
     list
-      .map((e, i) => card(e, e.pass !== false, i === 0, i ? list[i - 1].source_name : null))
+      .map((e, i) => card(e, e.pass !== false, i === 0, i ? list[i - 1].source_name : null, radar))
       .join('');
 }
 
