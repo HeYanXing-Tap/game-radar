@@ -1,0 +1,73 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>方案C 卡片杂志</title>
+<style>
+:root{--bg:#0b0d12;--card:#141821;--card2:#181d28;--line:#232a37;--fg:#e9edf5;--dim:#7d8798;
+  --blue:#5b9cff;--violet:#8b7bff;--mint:#3fd6b0;--amber:#ffb545}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1200px 600px at 15% -10%,#1a2233 0%,#0b0d12 55%);color:var(--fg);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",sans-serif;min-height:100vh}
+.wrap{max-width:880px;margin:0 auto;padding:38px 24px 90px}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:26px}
+.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--violet));
+  box-shadow:0 6px 20px rgba(91,156,255,.35)}
+.top h1{font-size:16px;font-weight:650;letter-spacing:.2px}
+.top p{font-size:11.5px;color:var(--dim);margin-top:2px}
+.pill{display:flex;gap:4px;margin-left:auto;background:#0f131a;border:1px solid var(--line);border-radius:11px;padding:3px}
+.pill button{border:0;background:none;color:var(--dim);font:inherit;font-size:12.5px;padding:5px 13px;border-radius:8px;cursor:pointer}
+.pill button.on{background:linear-gradient(135deg,rgba(91,156,255,.22),rgba(139,123,255,.22));color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(139,123,255,.35)}
+.mk{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#171c26,#12161e);
+  border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:22px;cursor:pointer}
+.mk .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px var(--amber)}
+.mk b{font-size:13.5px;font-weight:650}
+.mk span{font-size:12px;color:var(--dim)}
+.mk i{margin-left:auto;font-style:normal;font-size:12px;color:var(--dim)}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 24px 20px;
+  margin-bottom:16px;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--blue),var(--violet))}
+.card.hot::before{background:linear-gradient(180deg,var(--amber),#ff7a59)}
+.head{display:flex;gap:16px;align-items:flex-start;margin-bottom:12px}
+.score{min-width:64px;text-align:center;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:8px 4px}
+.score b{display:block;font-size:26px;line-height:1.05;font-weight:750;letter-spacing:-.5px;
+  background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.card.hot .score b{background:linear-gradient(135deg,var(--amber),#ff7a59);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score s{display:block;font-size:9.5px;letter-spacing:1.4px;color:var(--dim);text-decoration:none;margin-top:2px}
+h2{font-size:19.5px;line-height:1.42;font-weight:650;letter-spacing:-.1px}
+.meta{font-size:11.5px;color:var(--dim);margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{background:#1b2130;border:1px solid var(--line);border-radius:99px;padding:1px 9px;font-size:11px;color:#9fb0c9}
+.vd{font-size:14px;color:#c3ccdb;margin:10px 0 14px}
+.axes{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.ax{flex:1;min-width:96px}
+.ax em{font-style:normal;font-size:10px;color:var(--dim);letter-spacing:1px;display:block;margin-bottom:5px}
+.ax .bar{height:4px;border-radius:99px;background:#222a38;overflow:hidden}
+.ax .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--violet))}
+.blk{background:#11151d;border:1px solid #1e2532;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.blk em{font-style:normal;font-size:10px;letter-spacing:1.6px;color:var(--mint);display:block;margin-bottom:5px}
+.blk.risk em{color:#ff7a80}
+.blk p{font-size:13px;line-height:1.7;color:#aab6c7}
+.foot{display:flex;align-items:center;gap:12px;margin-top:4px}
+.foot a{font-size:12px;color:var(--blue);text-decoration:none}
+.foot button{margin-left:auto;background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;
+  padding:4px 11px;font:inherit;font-size:11.5px;cursor:pointer}
+</style></head><body><div class="wrap">
+<div class="top"><div class="logo"></div><div><h1>游戏资讯雷达</h1><p>18972 条 · 17600 事件 · 27 源 · 更新 11-27 15:11</p></div>
+  <div class="pill"><button class="on">选题</button><button>重点游戏</button><button>存档</button><button>信源</button></div></div>
+<div class="mk"><span class="dot"></span><b>今日必知</b><span>6 条多家在说 · 24 条单一来源</span><i>展开 ▾</i></div>
+<div id="list"></div>
+</div>
+<script>
+const rows = [{"t": "《GTA6》正式版画面大缩水？首支预告与实机对比", "s": 90, "src": "游民星空", "time": "2026-11-26 15:16", "v": "必做，但只能做成实测型内容——单纯搬对比图会被淹，自己截帧量化才有差异", "a": "别做「缩水了吗」的 Yes/No，做「同机位复现实验」：按首支预告的取景位自己重跑一遍同天气同时间，逐项测人群密度、反射、远景 LOD，再补一段「GTA 系列历代首发缩水史」做纵向参照，最后开投票让读者自己判", "ag": "全网媒体和 UP 主都会在同一天做同款对比，角度撞车概率极高；R 星对画面截取和视频素材的版权主张一向强硬，商用有下架风险；「缩水」是结论性表述，如果实测下来差异主要来自天气/时段/平台，稿子会被反向打脸，核查成本不低", "g": ["侠盗猎车手6", "Grand Theft Auto VI"], "ax": [{"key": "quirk", "score": 5, "why": "画面缩水是玩家最敏感的雷点，实机对比一出必吵。"}, {"key": "reach", "score": 5, "why": "GTA 是全民级 IP，不玩的人也会点进来看画质。"}, {"key": "window", "score": 4, "why": "发售当口对比刚起量，但同行一两天内会铺满。"}, {"key": "craft", "score": 3, "why": "可做逐场景对比和投票，但需自录素材，截图版权有风险。"}, {"key": "fit", "score": 5, "why": "正中 PC/主机买断制玩家，也覆盖泛游戏人群。"}]}, {"t": "恐怖！《GTA6》PC项目最高已44帧 画质良好偶有掉帧", "s": 88, "src": "游民星空", "time": "2026-11-26 11:11", "v": "值得做，素材自带传播力，但要避开照搬泄露者说法的陷阱，把重点放在时间线和技术解释上", "a": "别写「GTA6能跑了」，写「泄露72小时：一群民间开发者怎么把R星防护最严的游戏搬上PC」——把社区公开推文排成竞速时间线，配一段「为什么R星至今不给PC版」的行业解释，加一节法律后果盘点", "ag": "素材建立在盗版泄露文件上，引用实机画面有版权和合规风险；44帧、画质良好全是泄露者单方口径，无法核实，一旦翻车就要撤回；全网同题扎堆，角度容易撞车；R星母公司法务动作可能让稿件刚发就过时", "g": ["侠盗猎车手6", "GTA6"], "ax": [{"key": "quirk", "score": 5, "why": "官方没出PC版，民间却拆开跑起来了，本身就有强烈的反差，还带法律争议"}, {"key": "reach", "score": 5, "why": "GTA6是全民级IP，泄露、破解、跑分这些说法非玩家也会点"}, {"key": "window", "score": 4, "why": "泄露已发生几天，但44帧这个技术节点刚出，深度解读还空着"}, {"key": "craft", "score": 3, "why": "拿不到一手文件，只能整理公开推文和实机片段，还要额外做事实核查"}, {"key": "fit", "score": 4, "why": "PC单机是TapTap核心圈层，GTA6关注度溢出到全站"}]}, {"t": "《GTA6》女编剧删号！同名女性无辜躺枪被网暴", "s": 88, "src": "游民星空", "time": "2026-11-26 15:33", "v": "值得做，GTA6 加网暴误伤的双重爆点，但必须靠角度取胜，不能只做搬运", "a": "不写「编剧被网暴」，写「同名误伤」：查证这次误伤是怎么一步步发生的，再盘点游戏圈因同名被错骂的普通人，做成「网络猎巫找错人」的时间线复盘", "ag": "素材全靠外网截图，事实链难核实，容易变成二手转述；网暴题材情绪化，评论区易失控；「同名躺枪」这个梗社交平台已经玩过一轮，角度会撞车", "g": ["侠盗猎车手6", "GTA6"], "ax": [{"key": "quirk", "score": 5, "why": "编剧被网暴删号，同名路人被误伤，反差和荒诞感都够，评论区必吵"}, {"key": "reach", "score": 5, "why": "GTA6 是全民级 IP，网暴又是普遍生活经验，圈外人也会点"}, {"key": "window", "score": 4, "why": "刚出 0 小时，中文圈解读还少，但外网源头可能已发酵一两天"}, {"key": "craft", "score": 3, "why": "只能靠外网截图和时间线拼，无一手采访，事实核查成本不小"}, {"key": "fit", "score": 4, "why": "GTA6 正对 PC 单机核心人群，但内容偏社交八卦而非游戏本体"}]}, {"t": "《GTA6》社区骂战：PC移植玩家竟然嘲讽正版？", "s": 87, "src": "游民星空", "time": "2026-11-26 14:58", "v": "值得做，但只能做「玩家为什么吵」这一层，碰不到泄露文件本身，做不了技术实测就只能停在舆论观察。", "a": "别写「GTA6 泄露」，写「盗版玩家凭什么觉得自己有理」：扒国内外社区的原话帖和投票做一期玩家道德观田野调查，顺手科普静态重编译是什么、主机包为什么能在 PC 跑。", "ag": "题材踩盗版红线，不能给任何下载或链接，稿子一写就容易变成变相传播；Take-Two 法务压力大，平台侧也可能限流；另外泄露包真伪未经官方确认，跟着做容易被证伪打脸。", "g": ["GTA6", "侠盗猎车手6"], "ax": [{"key": "quirk", "score": 5, "why": "盗版玩家嘲讽买正版的人，天然对立面，评论区必吵"}, {"key": "reach", "score": 5, "why": "GTA6 是全网级话题，不玩的人也点，骂战还有额外看点"}, {"key": "window", "score": 3, "why": "稿子是刚发，但重编译项目成型需时间，事件很可能已发酵数日"}, {"key": "craft", "score": 3, "why": "社区原话和运行视频好取材，但涉盗版，不能放链接，法务与合规风险高"}, {"key": "fit", "score": 4, "why": "买断制 PC 单机玩家正中靶心，手游二次元读者也会围观"}]}, {"t": "扫描《GTA6》游戏里二维码吓一跳 官网竟被\"查封\"", "s": 86, "src": "游民星空", "time": "2026-11-26 15:53", "v": "值得做，但别做「又一个彩蛋」——把它做成 R 星假网站档案馆才有差异。", "a": "不只写这一个二维码：把玩家已扫出的所有 GTA6 内二维码跳转页收集成「R 星假网站档案」，每个附域名、截图、讽刺对象，再接上 GTA5 时期的 Epsilon 教、假航空公司、R 星客服恶搞页，做一期《R 星二十年来一直在假装自己是别的公司》。", "ag": "各家媒体几小时内会把红迪截图原样搬完，角度极度容易撞车；如果我们没有游戏本体，就只能二手转述别人的扫描结果，实测部分做不了；恶搞页面截图属于 R 星素材，大规模使用有版权风险，只能少量引用。", "g": ["侠盗猎车手6", "GTA6"], "ax": [{"key": "quirk", "score": 4, "why": "游戏里扫码跳出真网页，还是官方自己托管，有「怎么可能」的惊喜感"}, {"key": "reach", "score": 5, "why": "GTA6 三个字就够，不玩游戏的人也想点进去看那个查封页"}, {"key": "window", "score": 4, "why": "刚出，但源头多半是社区帖，几小时内会被全网搬一遍"}, {"key": "craft", "score": 4, "why": "可把已发现的二维码全扫一遍做档案，前提是我们能进游戏实测"}, {"key": "fit", "score": 4, "why": "GTA 属于 PC 单机玩家硬通货，手游二次元用户稍外围但仍是话题中心"}]}];
+const NAMES = {quirk:'谈资',reach:'外溢',window:'时机',craft:'可做',fit:'匹配'};
+document.getElementById('list').innerHTML = rows.slice(0,3).map((r,i)=>`
+<div class="card ${i===0?'hot':''}">
+  <div class="head">
+    <div class="score"><b>${r.s}</b><s>SCORE</s></div>
+    <div><h2>${r.t}</h2><div class="meta"><span>${r.src}</span><span>${r.time.slice(5)}</span>${r.g.map(g=>`<span class="chip">${g}</span>`).join('')}</div></div>
+  </div>
+  <div class="vd">${r.v}</div>
+  <div class="axes">${r.ax.map(a=>`<div class="ax"><em>${NAMES[a.key]||a.key} ${a.score}</em><div class="bar"><i style="width:${a.score*20}%"></i></div></div>`).join('')}</div>
+  <div class="blk"><em>切入</em><p>${r.a}</p></div>
+  <div class="blk risk"><em>风险</em><p>${r.ag}</p></div>
+  <div class="foot"><a href="#">原文 ↗</a><button>复制</button></div>
+</div>`).join('');
+</script></body></html>

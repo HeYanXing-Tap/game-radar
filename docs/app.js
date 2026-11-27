@@ -165,6 +165,55 @@ function mustKnowStrip(rows) {
   </section>`;
 }
 
+/**
+ * 同一主体最多占 2 张卡，其余折进「另外 N 条」——不降序，只省版面。
+ * 主体名用「全局出现次数最多的那个游戏名」来定：GTA6 / 侠盗猎车手6 / Grand Theft Auto VI
+ * 是同一件事的三种写法，按频次取其一就能自然并到一起。
+ */
+function layout(entries) {
+  // 主体取第一条游戏名（模型按重要度排过序）。不要把「顺便提到 GTA6」的条目也算进去，
+  // 否则《黄金矿工》这种自己的故事会被并到 GTA6 的折叠里。
+  const subjectOf = (e) => (e.games && e.games[0]) || null;
+  const seen = new Map();
+  const folded = new Map();
+  const seq = [];
+  for (const e of entries) {
+    const k = subjectOf(e);
+    if (!k) {
+      seq.push({ type: 'card', e });
+      continue;
+    }
+    const n = (seen.get(k) || 0) + 1;
+    seen.set(k, n);
+    if (n <= 2) seq.push({ type: 'card', e, k });
+    else {
+      if (!folded.has(k)) folded.set(k, []);
+      folded.get(k).push(e);
+    }
+  }
+  const res = [];
+  for (let i = 0; i < seq.length; i += 1) {
+    res.push(seq[i]);
+    const k = seq[i].k;
+    if (!k || !folded.has(k)) continue;
+    const next = seq[i + 1];
+    if (!next || next.type !== 'card' || next.k !== k) res.push({ type: 'fold', k, items: folded.get(k) });
+  }
+  return res;
+}
+
+function foldBlock(f) {
+  return `<details class="fold">
+    <summary>《${esc(f.k)}》另有 ${f.items.length} 条</summary>
+    <div class="fold-body">${f.items
+      .map(
+        (e) => `<a class="fold-row" href="${esc(e.url)}" target="_blank" rel="noopener">
+        <b>${e.total}</b><span>${esc(e.title)}</span><em>${esc(e.source_name)}</em></a>`
+      )
+      .join('')}</div>
+  </details>`;
+}
+
 async function renderBoard(radar) {
   const el = $(`#view-${radar}`);
   el.innerHTML = '<div class="empty">载入中…</div>';
@@ -192,13 +241,14 @@ async function renderBoard(radar) {
     return;
   }
   const list = state.all ? data.entries : data.entries.filter((e) => e.pass !== false);
-  const passCount = list.length;
-  const head =
-    radar === 'topic'
-      ? `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按选题价值排序 · 外溢能力权重最高<br /><span style="color:var(--mute)">这一栏回答的是：今天有什么值得写成稿子／视频</span></div>`
-      : `<div class="empty" style="padding:0 0 18px;text-align:left;color:var(--dim);font-size:12.5px;font-family:var(--mono)">近 ${state.days} 天 · ${list.length} 条候选${state.all ? '' : '（过门槛）'} · 按引进价值排序 · 品质与商业可行性权重最高<br /><span style="color:var(--mute)">这一栏回答的是：今天有什么游戏值得谈代理／上架／合作</span></div>`;
+  const head = `<div class="boardbar">近 ${state.days} 天 · ${list.length} 条${state.all ? '候选' : '过门槛'}</div>`;
   const mk = radar === 'topic' ? mustKnowStrip(await getHot()) : '';
-  el.innerHTML = mk + head + list.map((e) => card(e, e.pass !== false)).join('');
+  el.innerHTML =
+    mk +
+    head +
+    layout(list)
+      .map((it) => (it.type === 'fold' ? foldBlock(it) : card(it.e, it.e.pass !== false)))
+      .join('');
 }
 
 /** 极简 markdown：够渲染我们自己生成的日报就行。 */
@@ -206,6 +256,7 @@ function md(src) {
   const lines = src.split('\n');
   const out = [];
   let inList = false;
+  let mdH3 = 0;
   const inline = (s) =>
     esc(s)
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
@@ -226,7 +277,7 @@ function md(src) {
       inList = false;
     }
     if (!l.trim()) continue;
-    if (l.startsWith('### ')) out.push(`<h3>${inline(l.slice(4))}</h3>`);
+    if (l.startsWith('### ')) { mdH3 += 1; out.push(`<h3 id="s${mdH3}">${inline(l.slice(4))}</h3>`); }
     else if (l.startsWith('## ')) out.push(`<h2>${inline(l.slice(3))}</h2>`);
     else if (l.startsWith('# ')) out.push(`<h1>${inline(l.slice(2))}</h1>`);
     else if (l.startsWith('> ')) out.push(`<blockquote>${inline(l.slice(2))}</blockquote>`);
@@ -252,16 +303,56 @@ async function renderArchive() {
       .slice(0, 30)
       .map((d) => `<button class="dchip${d.date === want ? ' on' : ''}" data-date="${esc(d.date)}">${esc(d.date.slice(5))}</button>`)
       .join('');
-    el.innerHTML = `<div class="dbar">${chips}</div><div class="md" id="dbody">载入中…</div>`;
+    el.innerHTML = `<div class="dbar">${chips}</div><div id="dbody" class="empty">载入中…</div>`;
     el.querySelectorAll('.dchip').forEach((b) =>
       b.addEventListener('click', () => {
         state.digestDate = b.dataset.date;
         renderArchive();
       })
     );
+
     const d = await getDigest(want);
     const body = $('#dbody');
-    if (body) body.innerHTML = md(d.markdown || '');
+    if (!body) return;
+    // 只留题目索引，全文折叠——存档是用来回溯的，不是用来看的
+    // 索引按日报自己的章节分组（一、选题雷达 / 二、重点游戏雷达 …），
+    // 编号也跟着章节走，不然会出现两个「1」。
+    const blocks = [];
+    let cur = null;
+    let hn = 0;
+    for (const line of String(d.markdown || '').split('\n')) {
+      if (line.startsWith('## ')) {
+        cur = { title: line.slice(3).trim(), rows: [] };
+        blocks.push(cur);
+      } else if (line.startsWith('### ')) {
+        hn += 1;
+        const m = line.slice(4).match(/^(\d+)\.\s*(.*)$/);
+        if (m && cur) cur.rows.push({ n: m[1], t: m[2], id: `s${hn}` });
+      }
+    }
+    const idx = blocks
+      .filter((b) => b.rows.length)
+      .map(
+        (b) => `<div class="dix-sec"><h4>${esc(b.title)}</h4>${b.rows
+          .map(
+            (r) => `<a class="dix-row" href="#${r.id}"><b>${r.n}</b><span>${esc(r.t)}</span></a>`
+          )
+          .join('')}</div>`
+      )
+      .join('');
+    body.className = '';
+    body.innerHTML = `
+      <div class="dix">${idx || '<div class="empty">这一天没有条目</div>'}</div>
+      <details class="dall"><summary>看完整日报</summary><div class="md">${md(d.markdown || '')}</div></details>`;
+    body.querySelectorAll('.dix-row').forEach((a) =>
+      a.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const det = body.querySelector('.dall');
+        if (det) det.open = true;
+        const target = body.querySelector(`#${a.getAttribute('href').slice(1)}`);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+    );
   } catch (e) {
     el.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
   }
