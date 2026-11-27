@@ -26,7 +26,7 @@ function norm(s: string): string {
   return s
     .toLowerCase()
     // 中文标点也要去掉，否则「勇者小队全灭了」和 Steam 上的「勇者小队全灭了。」对不上
-    .replace(/[：:·・—\-–_/\\|'"“”‘’《》()（）[\]。！？，、；…·「」『』【】]/g, ' ')
+    .replace(/[：:·・—\-–_/\\|'"“”‘’《》()（）[\]。！？，、；…·「」『』【】®™©]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -37,7 +37,13 @@ function stripParticles(s: string): string {
 }
 
 /** 搜索结果可能跑到别的作品上去（查 Hypnos 会先给 Hypnospace Outlaw），这里做一道名字核对。 */
-function looksSame(query: string, candidate: string): boolean {
+/** 资料片/Demo/原声带这类条目不是本体，它们的封面和发售日都不能拿来表示这款游戏。 */
+const DERIVATIVE = /(demo|soundtrack|\bost\b|dlc|pack|upgrade|bundle|expansion|season pass|体验版|试玩|原声|配乐|典藏|扩展包|角色包|卡牌?包)/i;
+function isDerivative(query: string, candidate: string): boolean {
+  return DERIVATIVE.test(candidate) && !DERIVATIVE.test(query);
+}
+
+export function looksSame(query: string, candidate: string): boolean {
   const a = norm(query);
   const b = norm(candidate);
   if (!a || !b) return false;
@@ -45,10 +51,36 @@ function looksSame(query: string, candidate: string): boolean {
   const pa = stripParticles(a);
   const pb = stripParticles(b);
   if (pa && pa === pb) return true;
-  if (a.length <= 6 && (b === a || b.startsWith(a) || b.includes(a))) return true;
+
+  // 中文名常带副标题：「深空当铺」对「深空当铺：可能是偷的」。
+  // 只对含中文的一方才放宽包含判断——拉丁名靠包含会出事
+  // （「The Expanse」是「The Expanse: Osiris Reborn」的前缀，但不是同一个作品）。
+  const shorter = pa.length <= pb.length ? pa : pb;
+  const longer = pa.length <= pb.length ? pb : pa;
+  // 两字名在中文里很常见（「嬗变」「九王」），门槛放到 2 个字。
+  if (/[\u4e00-\u9fa5]/.test(shorter) && shorter.length >= 2 && longer.includes(shorter) && !isDerivative(a, b)) return true;
+
+  // 拉丁名按词比：共享词要占到六成。
+  // 以前「有一个词相同就算同一款」，结果「黑神话：钟馗」配上了「黑神话：悟空」的封面、
+  // 「战锤40K：黑暗异端」配上了「战锤40K：暗潮」——宁可没封面，不能给错图。
   const at = new Set(a.split(' ').filter((t) => t.length >= 2));
-  const bt = b.split(' ').filter((t) => t.length >= 2);
-  return bt.some((t) => at.has(t));
+  const bt = new Set(b.split(' ').filter((t) => t.length >= 2));
+  if (!at.size || !bt.size) return false;
+  let inter = 0;
+  for (const t of at) if (bt.has(t)) inter++;
+  const union = at.size + bt.size - inter;
+  if (union > 0 && inter / union >= 0.6 && !isDerivative(a, b)) return true;
+
+  // 「Hela」对「Hela：鼠鼠奇旅」——拉丁主名 + 中文副标题，中文是国内发行时加的。
+  // 反过来不行：「The Expanse」是「The Expanse: Osiris Reborn」的前缀，多出来的还是拉丁词，不是副标题。
+  const small = at.size <= bt.size ? at : bt;
+  const big = at.size <= bt.size ? bt : at;
+  if (!small.size) return false;
+  let covered = 0;
+  for (const t of small) if (big.has(t)) covered++;
+  if (covered !== small.size) return false;
+  for (const t of big) if (!small.has(t) && !/[\u4e00-\u9fa5]/.test(t)) return false;
+  return true;
 }
 
 function parseRelease(date: string): string | null {

@@ -3,7 +3,7 @@ import { prefilter, scoreItem, thresholdFor } from './score.ts';
 import { BudgetExceeded, stats } from './llm.ts';
 import { hasLlm, llmConfig } from './config.ts';
 import { PRESCREEN_CUTOFF } from './prescreen.ts';
-import { factsLine, lookupGame, mentionedInTitle } from './steam.ts';
+import { factsLine, lookupGame } from './steam.ts';
 import { biliHeatFor, biliLine } from './heat.ts';
 import type { Radar } from './types.ts';
 
@@ -106,7 +106,10 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
       if (opts.radar === 'game' && row.game_name) {
         const parts: string[] = [];
         // Steam：这游戏上线多久了、有多少人在评（判断时间窗）
-        if (mentionedInTitle(row.game_name, row.title)) {
+        // 以前要求标题里必须出现这个名字才查，结果中文名/英文名对不上时就整条跳过，
+        // 看板上既没封面也没状态。现在只要名字像个作品名就查——查不到也只是多一次请求。
+        const nameOk = row.game_name.length <= 40 && !/[见报道原文？?]/.test(row.game_name);
+        if (nameOk) {
           try {
             parts.push(factsLine(await lookupGame(row.game_name)));
           } catch (e) {

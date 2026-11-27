@@ -8,6 +8,7 @@ import { extractRows } from '../src/adapters.ts';
 import { titleKey, urlKey, jaccard, similarity } from '../src/db.ts';
 import { prefilter } from '../src/score.ts';
 import { fillTemplate } from '../src/adapters.ts';
+import { looksSame } from '../src/steam.ts';
 
 let pass = 0;
 let fail = 0;
@@ -108,7 +109,18 @@ const list = extractHtmlList(
 );
 ok('只留正文链接', list.length === 1 && list[0].url.includes('/news/202610/1.shtml'), JSON.stringify(list));
 
-console.log('\n[8] stripHtml');
+console.log('\n[8] Steam 名字匹配（宁可没封面，不能给错图）');
+ok('中文副标题算同一款', looksSame('深空当铺', '深空当铺：可能是偷的'));
+ok('两字中文名算同一款', looksSame('嬗变', '嬗变 (METAMORPHOSIS)') && looksSame('九王', '九王 9 Kings'));
+ok('拉丁主名+中文副标题算同一款', looksSame('Hela：鼠鼠奇旅', 'Hela'));
+ok('注册商标符号不影响', looksSame('Call of Duty: Modern Warfare 4', 'Call of Duty®: Modern Warfare® 4'));
+ok('不同作品不能配错图', !looksSame('黑神话：钟馗', '黑神话：悟空'));
+ok('同系列不同作不能配错图', !looksSame('战锤40K：黑暗异端', '战锤40K：暗潮'));
+ok('前缀不是同一款', !looksSame('The Expanse: Osiris Reborn', 'The Expanse'));
+ok('Demo/原声/DLC 不算本体', !looksSame('Starhand', 'Starhand Demo')
+  && !looksSame("Baldur's Gate 3", "Baldur's Gate 3 - Digital Deluxe Edition DLC"));
+
+console.log('\n[9] stripHtml');
 ok('去脚本', stripHtml('<script>evil()</script>正文') === '正文');
 
 console.log(`\n${fail === 0 ? '全部通过' : '有失败'}：${pass} 通过 / ${fail
