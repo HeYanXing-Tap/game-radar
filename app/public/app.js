@@ -104,7 +104,10 @@ function stageClass(label) {
   return 'st-miss';
 }
 
-const STEAM_HEADER = (id) => `https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/header.jpg`;
+/** 卡片配图：Steam 商店页的截图就是实机画面，优先用；
+ *  没有 Steam 页的（国产自研、未上架）退回原文配图。
+ *  两边都不用 capsule 封面——那是宣传物料，看不出游戏长什么样。 */
+const cardImage = (e) => e.shot || e.image || null;
 
 function card(e, passing, lead, prevSrc, radar) {
   const isGame = radar === 'game';
@@ -121,8 +124,9 @@ function card(e, passing, lead, prevSrc, radar) {
   const sub = isGame && (e.games || []).length ? `<p class="art">${esc(e.title)}</p>` : '';
 
   // 封面列永远占位，保证所有行的正文宽度一致；图挂了就把这一格留空。
+  const img = isGame ? cardImage(e) : null;
   const cover = isGame
-    ? `<div class="cover">${e.appid ? `<img src="${STEAM_HEADER(e.appid)}" alt="" loading="lazy"
+    ? `<div class="cover">${img ? `<img src="${esc(img)}" alt="" loading="lazy"
          onerror="this.closest('.cover').classList.add('nocover');this.remove()" />` : ''}</div>`
     : '';
 

@@ -13,6 +13,7 @@ interface PendingItem {
   summary: string | null;
   url: string;
   game_name?: string | null;
+  game_alt?: string | null;
   published_at: string | null;
   fetched_at: string;
   heat_json: string | null;
@@ -64,7 +65,7 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
   // 默认只细评预筛过线的；没有预筛记录的老数据也放进来（首次接入时不会漏）
   const rows = q<PendingItem & { sid: number }>(
     `SELECT i.id AS sid, i.title, i.summary, i.url, i.published_at, i.fetched_at, i.heat_json,
-            s.name AS source_name, s.tier, s.role, ps.game_name AS game_key, p.game_name AS game_name
+            s.name AS source_name, s.tier, s.role, ps.game_name AS game_key, p.game_name AS game_name, ps.game_name_alt AS game_alt
      FROM items i
      JOIN sources s ON s.id = i.source_id
      LEFT JOIN scores sc ON sc.item_id = i.id AND sc.radar = ?
@@ -111,7 +112,14 @@ export async function scorePending(opts: ScoreRunOpts): Promise<{ scored: number
         const nameOk = row.game_name.length <= 40 && !/[见报道原文？?]/.test(row.game_name);
         if (nameOk) {
           try {
-            parts.push(factsLine(await lookupGame(row.game_name)));
+            let f = await lookupGame(row.game_name);
+            // 中文名在 Steam 上搜不到时，用预筛给的英文原名再试一次
+            // （「杀戮尖塔2」在商店里就叫「Slay the Spire 2」，中文名搜是 0 结果）。
+            if (!f.appid && row.game_alt && row.game_alt !== row.game_name) {
+              const alt = await lookupGame(row.game_alt);
+              if (alt.appid) f = alt;
+            }
+            parts.push(factsLine(f));
           } catch (e) {
             log(`[steam] ${row.game_name} 查询失败：${e instanceof Error ? e.message : String(e)}`);
           }
@@ -220,6 +228,8 @@ export interface BoardEntry {
   game_key?: string | null;
   /** 重点游戏专用：Steam appid（用来拼封面图）。 */
   appid?: number | null;
+  /** 重点游戏专用：Steam 商店页里的实机截图（封面不算，实机才算）。 */
+  shot?: string | null;
   /** 重点游戏专用：发布阶段。 */
   stage?: string | null;
   /** 重点游戏专用：给人看的一句话状态，如「尚未发售」「首发 1 天」「上线 23 天」「Steam 查不到」。 */
@@ -305,6 +315,7 @@ export function board(radar: Radar, opts: { days?: number; limit?: number; onlyP
         const g = key ? byName.get(key) : undefined;
         e.appid = g?.steam_appid ? Number(g.steam_appid) : null;
         e.stage_label = stageLabelOf(g) ?? stageFromFacts(e.facts);
+        e.shot = firstShot(g?.meta_json);
       }
     }
   }
@@ -334,6 +345,17 @@ export function recordRun(kind: string, startedAt: string, statsObj: unknown): v
   exec('INSERT INTO runs (kind, started_at, finished_at, stats_json) VALUES (?,?,?,?)', kind, startedAt, nowIso(), JSON.stringify(statsObj));
 }
 
+
+/** 商店页第一张实机截图。老记录没存过就没有，不补查——导出阶段不该发网络请求。 */
+function firstShot(metaJson: string | null | undefined): string | null {
+  if (!metaJson) return null;
+  try {
+    const m = JSON.parse(metaJson) as { shots?: string[] };
+    return Array.isArray(m.shots) && m.shots.length ? m.shots[0] : null;
+  } catch {
+    return null;
+  }
+}
 
 /** 库里没有这条游戏时，从它打分时用的 facts 文本里还原状态。 */
 function stageFromFacts(facts: string | null): string | null {

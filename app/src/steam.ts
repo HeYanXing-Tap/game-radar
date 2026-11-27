@@ -17,6 +17,8 @@ export interface SteamFacts {
   comingSoon: boolean;
   reviews: number | null;
   priceYuan: number | null;
+  /** 商店页里的实机截图（缩略图 600x338）。用来在看板上替代封面图。 */
+  shots?: string[];
   fetchedAt: string;
 }
 
@@ -98,7 +100,17 @@ async function searchApp(name: string): Promise<{ appid: string; name: string } 
   const queries = [name];
   const main = name.split(/[：:｜|—–\-]/)[0].trim();
   if (main && main !== name && main.length >= 2) queries.push(main);
-  for (const q of queries) {
+  // Steam 的搜索是按字面匹配的：媒体写「我带过最差的一届」，商店里叫「我带过的最差一届」，
+  // 原样搜是 0 结果。多试几种写法——去虚词、去掉前面几个字取尾部片段，
+  // 命中结果仍要过 looksSame 这道闸，所以放宽查询不会换来错图。
+  const bases = [name, main, stripParticles(name), stripParticles(main)].filter((x) => !!x && x.length >= 2);
+  for (const base of bases) {
+    for (const cut of [6, 5, 4]) {
+      if (base.length > cut + 2) queries.push(base.slice(-cut));
+    }
+  }
+  const uniq = [...new Set(queries)].filter((x) => x.length >= 2);
+  for (const q of uniq) {
     const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(q)}&cc=cn&l=schinese`;
     const r = await politeFetch(url);
     if (!r.ok) continue;
@@ -115,7 +127,13 @@ async function searchApp(name: string): Promise<{ appid: string; name: string } 
 }
 
 async function appDetails(appid: string): Promise<Omit<SteamFacts, 'query' | 'matched' | 'appid' | 'fetchedAt'>> {
-  const out = { releaseDate: null as string | null, comingSoon: false, reviews: null as number | null, priceYuan: null as number | null };
+  const out = {
+    releaseDate: null as string | null,
+    comingSoon: false,
+    reviews: null as number | null,
+    priceYuan: null as number | null,
+    shots: [] as string[],
+  };
   const r = await politeFetch(`https://store.steampowered.com/api/appdetails?appids=${appid}&cc=cn&l=schinese`);
   if (!r.ok) return out;
   try {
@@ -129,6 +147,9 @@ async function appDetails(appid: string): Promise<Omit<SteamFacts, 'query' | 'ma
     if (typeof recs === 'number') out.reviews = recs;
     const pf = (d.price_overview as { final?: number } | undefined)?.final;
     if (typeof pf === 'number') out.priceYuan = Math.round(pf / 100);
+    // 商店页的截图就是实机画面，比 capsule 封面更能代表游戏本身。
+    const shots = (d.screenshots as Array<{ path_thumbnail?: string }> | undefined) ?? [];
+    out.shots = shots.map((x) => x.path_thumbnail).filter((x): x is string => !!x).slice(0, 3);
   } catch {
     /* 忽略 */
   }

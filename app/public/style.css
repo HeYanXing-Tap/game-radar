@@ -209,9 +209,10 @@ td.num { font-family: var(--mono); font-size: 12px; color: var(--mute); }
 .row.game { grid-template-columns: 56px 1fr 168px; gap: 22px; }
 .row.game .cover { padding-top: 3px; }
 .row.game .cover img {
-  display: block; width: 168px; height: auto; border: 1px solid var(--line-2);
-  background: var(--paper-2);
+  display: block; width: 168px; height: 94px; object-fit: cover; object-position: center;
+  border: 1px solid var(--line-2); background: var(--paper-2);
 }
+.row.game.lead .cover img { height: 108px; }
 .row.game h3 { font-weight: 700; color: var(--ink); font-size: 20px; }
 .row.game.lead h3 { font-size: 27px; }
 .row.game .art {

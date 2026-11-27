@@ -101,12 +101,14 @@ export async function prescreenQueue(
         const total = Math.max(0, Math.min(100, Math.round(Number(s.s))));
         if (!Number.isFinite(total)) continue;
         const g = s.g ? String(s.g).replace(/[《》]/g, '').trim().slice(0, 80) : null;
+        const ge = s.ge ? String(s.ge).replace(/[《》]/g, '').trim().slice(0, 80) : null;
         exec(
-          `INSERT INTO prescreen (item_id, radar, total, why, model, created_at, related, game_name)
-           VALUES (?,?,?,?,?,?,?,?)
+          `INSERT INTO prescreen (item_id, radar, total, why, model, created_at, related, game_name, game_name_alt)
+           VALUES (?,?,?,?,?,?,?,?,?)
            ON CONFLICT(item_id, radar) DO UPDATE SET total=excluded.total, why=excluded.why,
              created_at=excluded.created_at, related=excluded.related,
-             game_name=COALESCE(excluded.game_name, prescreen.game_name)`,
+             game_name=COALESCE(excluded.game_name, prescreen.game_name),
+             game_name_alt=COALESCE(excluded.game_name_alt, prescreen.game_name_alt)`,
           batch[idx].id,
           radar,
           total,
@@ -114,7 +116,8 @@ export async function prescreenQueue(
           'prescreen',
           nowIso(),
           RELATED.KEEP.has(String(s.r ?? '')) ? String(s.r) : 'game',
-          g
+          g,
+          ge
         );
         screened++;
       }
