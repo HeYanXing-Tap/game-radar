@@ -85,53 +85,47 @@ a { color: inherit; text-decoration: none; }
 .mk-t { line-height: 1.5; }
 .mk-m { font-family: var(--mono); font-size: 10.5px; color: var(--dim); white-space: nowrap; }
 
-/* ---------- 条目 ---------- */
-.card {
-  display: grid; grid-template-columns: 62px 1fr; gap: 22px;
-  padding: 26px 0 24px; border-bottom: 1px solid var(--line);
+/* ---------- 条目：一条按分数排的清单 ---------- */
+.row {
+  display: grid; grid-template-columns: 56px 1fr; gap: 20px;
+  padding: 13px 0 14px; border-bottom: 1px solid var(--line);
 }
-.card:last-child { border-bottom: 0; }
-.card .score { font-family: var(--mono); padding-top: 4px; }
-.card .score b { display: block; font-size: 29px; line-height: 1; font-weight: 400; color: var(--dim); letter-spacing: -1px; }
-.card .score span { display: block; font-size: 9px; letter-spacing: 1.6px; color: var(--dim); margin-top: 4px; }
-.card.pass .score b { color: var(--ink); }
-.card.pass:nth-of-type(1) .score b { color: var(--accent); }
-.card h3 {
-  margin: 0 0 8px; font-family: var(--serif); font-size: 22px; line-height: 1.45;
-  font-weight: 700; letter-spacing: .3px; color: var(--ink);
+.row:last-child { border-bottom: 0; }
+.row .s {
+  font-family: var(--mono); font-size: 20px; line-height: 1.25; color: var(--dim);
+  font-variant-numeric: tabular-nums; letter-spacing: -.5px;
 }
-.card h3 a:hover { color: var(--accent); }
-.card .meta {
-  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-  font-family: var(--mono); font-size: 11px; color: var(--dim); margin-bottom: 10px;
+.row.pass .s { color: var(--ink); }
+.row h3 {
+  margin: 0; font-family: var(--serif); font-size: 18.5px; line-height: 1.5;
+  font-weight: 400; letter-spacing: .2px; color: var(--text);
 }
-.card .meta .src { color: var(--mute); }
+.row h3 a:hover { color: var(--accent); }
+.row .v {
+  margin: 4px 0 0; font-size: 13px; line-height: 1.7; color: var(--mute);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+}
+.row .m {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--dim);
+}
+.row .m .src { color: var(--mute); }
+
+/* 只有第 1 条放大：不写任何标签，靠字号和一根竖线表达「这条先看」 */
+.row.lead { padding: 20px 0 22px; }
+.row.lead .s { font-size: 30px; color: var(--accent); }
+.row.lead h3 { font-size: 26px; line-height: 1.42; font-weight: 700; color: var(--ink); }
+.row.lead .v { font-size: 14.5px; color: var(--text); -webkit-line-clamp: 3; margin-top: 9px; }
+.row .a {
+  margin: 11px 0 0; padding-left: 13px; border-left: 2px solid var(--accent);
+  font-size: 13.5px; line-height: 1.85; color: var(--text);
+}
+.row.fail { opacity: .6; }
+
 .tier3, .also {
   font-family: var(--mono); font-size: 10px; letter-spacing: .5px;
   border: 1px solid var(--line-2); padding: 1px 6px; color: var(--mute);
 }
-.card .axes { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 11px; }
-.card .axes i {
-  font-style: normal; font-family: var(--mono); font-size: 10.5px; letter-spacing: .5px;
-  color: var(--dim); border-bottom: 1px solid var(--line-2); padding-bottom: 1px;
-}
-.card .verdict { margin: 0 0 11px; font-size: 14.5px; color: var(--text); }
-.card .games { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 11px; }
-.chip {
-  font-family: var(--mono); font-size: 10.5px; color: var(--mute);
-  border: 1px solid var(--line-2); padding: 1px 8px; border-radius: 2px;
-}
-.card .angle {
-  margin: 0 0 10px; padding-left: 13px; border-left: 2px solid var(--accent);
-  font-size: 14px; color: #4a453c;
-}
-.card .angle b, .card .against b {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 1.6px; font-weight: 400;
-  color: var(--accent); margin-right: 9px;
-}
-.card .against { margin: 0; font-size: 12.5px; line-height: 1.7; color: var(--mute); }
-.card .against b { color: var(--red); }
-.card.fail { opacity: .62; }
 .tools { display: none; }
 
 /* ---------- 同主体折叠 ---------- */
@@ -206,5 +200,6 @@ td.num { font-family: var(--mono); font-size: 12px; color: var(--mute); }
   .navrow { flex-wrap: wrap; gap: 10px; }
   .tabs { gap: 16px; }
   .controls { margin-left: 0; }
-  .card { grid-template-columns: 44px 1fr; gap: 14px; }
-  .card h3 { font-size: 19px; }
+  .row { grid-template-columns: 44px 1fr; gap: 14px; }
+  .row h3 { font-size: 17px; }
+  .row.lead h3 { font-size: 21px; }

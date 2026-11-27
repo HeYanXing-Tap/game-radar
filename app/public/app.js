@@ -95,32 +95,23 @@ async function loadStats() {
   } catch {}
 }
 
-function card(e, passing) {
-  const cls = passing ? 'pass' : 'fail';
-  const axes = (e.axes || [])
-    .map((a) => `<i title="${esc(a.why)}">${AXIS_LABEL[a.key] || a.key} ${a.score}</i>`)
-    .join('');
+function card(e, passing, lead, prevSrc) {
+  const cls = [passing ? 'pass' : 'fail', lead ? 'lead' : ''].join(' ').trim();
   const tierBadge = e.tier === 3 ? '<span class="tier3">一手</span>' : '';
-  const heat = e.event_sources > 1 ? `· ${e.event_sources} 源在说` : '';
+  const heat = e.event_sources > 1 ? `<span>${e.event_sources} 源在说</span>` : '';
   const also = (e.also ?? 1) > 1 ? `<span class="also">同事件另有 ${e.also - 1} 篇</span>` : '';
   return `
-  <article class="card ${cls}" data-id="${e.item_id}">
-    <div class="score"><b>${e.total}</b><span>SCORE</span></div>
-    <div>
+  <article class="row ${cls}" data-id="${e.item_id}">
+    <div class="s">${Math.round(e.total)}</div>
+    <div class="b">
       <h3><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a></h3>
-      <div class="meta">
-        <span class="src">${esc(e.source_name)} ${tierBadge}</span>
+      ${e.verdict ? `<p class="v">${esc(e.verdict)}</p>` : ''}
+      <div class="m">
+        ${e.source_name && e.source_name !== prevSrc ? `<span class="src">${esc(e.source_name)}${tierBadge}</span>` : ''}
         <span>${e.published_at ? relTime(e.published_at) : e.rank ? `榜 #${e.rank}` : '时间未知'}</span>
-        <span>${esc(heat)}</span>${also}
+        ${heat}${also}
       </div>
-      <div class="axes">${axes}</div>
-      <p class="verdict">${esc(e.verdict)}</p>
-      ${(e.games || []).length ? `<div class="games">${e.games.map((g) => `<span class="chip">${esc(g)}</span>`).join('')}</div>` : ''}
-      ${e.angle ? `<p class="angle"><b>${e.radar === 'topic' ? '角度' : '下一步'}</b>${esc(e.angle)}</p>` : ''}
-      ${e.against ? `<p class="against"><b>风险</b>${esc(e.against)}</p>` : ''}
-      <div class="tools">
-        <button data-copy="${esc(`${e.title}\n${e.angle || e.verdict}`)}">复制</button>
-      </div>
+      ${lead && e.angle ? `<p class="a">${esc(e.angle)}</p>` : ''}
     </div>
   </article>`;
 }
@@ -198,7 +189,7 @@ async function renderBoard(radar) {
     mk +
     head +
     list
-      .map((e) => card(e, e.pass !== false))
+      .map((e, i) => card(e, e.pass !== false, i === 0, i ? list[i - 1].source_name : null))
       .join('');
 }
 
