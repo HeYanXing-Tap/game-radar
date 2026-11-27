@@ -111,5 +111,24 @@ ok('只留正文链接', list.length === 1 && list[0].url.includes('/news/202610
 console.log('\n[8] stripHtml');
 ok('去脚本', stripHtml('<script>evil()</script>正文') === '正文');
 
-console.log(`\n${fail === 0 ? '全部通过' : '有失败'}：${pass} 通过 / ${fail} 失败\n`);
+// 作品名归一
+{
+  const { buildAliasMap, canonicalize, variantsOf } = await import('../src/alias.ts');
+  ok('括号里的并列译名会被拆出来', variantsOf('侠盗猎车手6（Grand Theft Auto VI）').includes('Grand Theft Auto VI'));
+  const rows = [
+    { games: ['侠盗猎车手6'] },
+    { games: ['侠盗猎车手6（Grand Theft Auto VI）'] },
+    { games: ['侠盗猎车手6', 'GTA6'] },
+    { games: ['侠盗猎车手6', 'GTA6'] },
+    { games: ['侠盗猎车手6', 'GTA6'] },
+    { games: ['侠盗猎车手6', 'GTA6'] },
+    { games: ['黄金矿工', 'GTA6'] },
+  ];
+  const m = buildAliasMap(rows);
+  ok('GTA6 与官方中文名归一', canonicalize(['GTA6'], m)[0] === canonicalize(['侠盗猎车手6'], m)[0], canonicalize(['GTA6'], m)[0]);
+  ok('顺便提到的作品不会并进来', canonicalize(['黄金矿工'], m)[0] === '黄金矿工');
+}
+
+console.log(`\n${fail === 0 ? '全部通过' : '有失败'}：${pass} 通过 / ${fail
+} 失败\n`);
 process.exit(fail === 0 ? 0 : 1);
